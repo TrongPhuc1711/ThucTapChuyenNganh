@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
-import "../../../styles/Dashboard/Categories.css";
+//import "../../../styles/Dashboard/Categories.css";
+import DashboardLayout from "../../../components/DashboardLayout";
 
 export default function Categories() {
   const navigate = useNavigate();
@@ -70,14 +71,14 @@ export default function Categories() {
   };
 
   return (
-    <div className="categories-container">
-      <div className="categories-header">
-        <button onClick={() => navigate("/admin")} className="btn-back">
-          ← Quay lại
-        </button>
-        <h1>🗂️ Quản Lý Loại Món</h1>
-      </div>
-
+    // <div className="categories-container">
+    //   <div className="categories-header">
+    //     <button onClick={() => navigate("/admin")} className="btn-back">
+    //       ← Quay lại
+    //     </button>
+    //     <h1>🗂️ Quản Lý Loại Món</h1>
+    //   </div>
+    <DashboardLayout>
       {message && <div className="message-alert">{message}</div>}
 
       <div className="categories-content">
@@ -169,6 +170,8 @@ export default function Categories() {
           )}
         </div>
       </div>
-    </div>
+    {/* </div> */}
+    </DashboardLayout>
+    
   );
 }
