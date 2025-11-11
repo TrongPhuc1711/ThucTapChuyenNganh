@@ -1,0 +1,62 @@
+.customer-container {
+    padding: 40px;
+    background-color: #fdf8f4;
+    min-height: 100vh;
+    text-align: center;
+  }
+  
+  .customer-container h1 {
+    color: #6b3e26;
+    margin-bottom: 40px;
+  }
+  
+  .customer-menu {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 25px;
+  }
+  
+  .menu-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 220px;
+    padding: 20px;
+    transition: transform 0.2s ease;
+  }
+  
+  .menu-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .menu-card img {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+  
+  .menu-card h3 {
+    color: #6b3e26;
+    margin-top: 10px;
+  }
+  
+  .menu-card p {
+    color: #d2691e;
+    font-weight: bold;
+  }
+  
+  .menu-card button {
+    background-color: #6b3e26;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .menu-card button:hover {
+    background-color: #4d2d1a;
+  }
+  
