@@ -470,3 +470,36 @@ tbody tr:hover {
   display: grid;
   gap: 30px;
 }
+/* Chi tiết món */
+.chitiet-section {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+.chitiet-section h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+.chitiet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+/* Quan ly nhan vien */
+.badge-role {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.85rem;
+}
+
+.badge-role.admin {
+  background: #ff6b6b;
+}
+
+.badge-role.staff {
+  background: #4dabf7;
+}

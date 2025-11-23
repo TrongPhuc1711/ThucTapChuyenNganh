@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
-//import "../../../styles/Dashboard/Categories.css";
 import DashboardLayout from "../../../components/DashboardLayout";
 
 export default function Categories() {
@@ -30,10 +29,10 @@ export default function Categories() {
     try {
       if (editingLoaiMon) {
         await api.put(`/loaimon/${editingLoaiMon}`, loaiMonForm);
-        setMessage("✅ Cập nhật loại món thành công");
+        setMessage("✅Cập nhật loại món thành công");
       } else {
         await api.post("/loaimon", loaiMonForm);
-        setMessage("✅ Thêm loại món thành công");
+        setMessage("✅Thêm loại món thành công");
       }
       setLoaiMonForm({ TenLM: "", MoTa: "" });
       setEditingLoaiMon(null);
@@ -71,14 +70,7 @@ export default function Categories() {
   };
 
   return (
-    // <div className="categories-container">
-    //   <div className="categories-header">
-    //     <button onClick={() => navigate("/admin")} className="btn-back">
-    //       ← Quay lại
-    //     </button>
-    //     <h1>🗂️ Quản Lý Loại Món</h1>
-    //   </div>
-    <DashboardLayout>
+    <DashboardLayout title={"Quản lý loại món"}>
       {message && <div className="message-alert">{message}</div>}
 
       <div className="categories-content">

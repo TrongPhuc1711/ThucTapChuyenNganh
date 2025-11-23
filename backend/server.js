@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import authRouters from './routes/authRoutes.js';
-import loaiMonRoutes from './routes/categoriesRoutes.js'
-import monRoutes from './routes/productsRoutes.js';
+import loaiMonRoutes from './routes/Admin/categoriesRoutes.js';
+import monRoutes from './routes/Admin/productsRoutes.js';
+import chiTietProductsRoutes from './routes/Admin/chiTietProductsRoutes.js';
+import staffRoutes from './routes/Admin/staffRoutes.js';
+import orderRoutes from './routes/Admin/ordersRoutes.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,7 +20,9 @@ app.use(express.json()); // Giúp server đọc được { Email, MatKhau } từ
 app.use('/api/auth',authRouters)
 app.use('/api/loaimon', loaiMonRoutes);
 app.use('/api/mon', monRoutes);
-
+app.use('/api/chitietmon', chiTietProductsRoutes);
+app.use('/api/nhanvien',staffRoutes);
+app.use('/api/donhang', orderRoutes);
 // Lấy đường dẫn thư mục hiện tại (cần thiết cho ES Modules)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

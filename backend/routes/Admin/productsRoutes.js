@@ -1,7 +1,7 @@
 import express from "express";
 import { getAllMon,getMonById,  createMon, updateMon,deleteMon  } 
-from "../controllers/productsController.js";
-import upload from "../middleware/uploadMidleware.js";
+from "../../controllers/Admin/productsController.js";
+import upload from "../../middleware/uploadMidleware.js";
 
 const router=express.Router();
 

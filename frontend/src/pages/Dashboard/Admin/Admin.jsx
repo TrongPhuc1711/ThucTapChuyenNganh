@@ -6,7 +6,7 @@ export default function Admin() {
     return (
       <div className="admin-container">
         <header className="admin-header">
-          <h1>Trang Quản Trị Hệ Thống P-Coffee🍵</h1>
+          <h1>Trang Quản Trị Hệ Thống P-Coffee</h1>
         </header>
   
         <div className="admin-content">
@@ -23,7 +23,7 @@ export default function Admin() {
           <div className="admin-card">
             <h2>Quản lý nhân viên</h2>
             <p>Thêm hoặc chỉnh sửa thông tin nhân viên</p>
-            <button>Vào quản lý</button>
+            <button onClick={() => navigate("/admin/staffs")}>Vào quản lý</button>
           </div>
   
           <div className="admin-card">
@@ -42,7 +42,7 @@ export default function Admin() {
           <div className="admin-card">
             <h2>Quản lý đơn hàng</h2>
             <p>Xem đơn bán hàng theo ngày, tháng.</p>
-            <button>Xem thống kê</button>
+            <button onClick={()=>navigate("/admin/orders")}>Xem đơn hàng</button>
           </div>
         </div>
       </div>

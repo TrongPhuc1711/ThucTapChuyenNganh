@@ -1,4 +1,4 @@
-import pool from '../config/db.js';
+import pool from '../../config/db.js';
 
 // Lấy tất cả loại món
 export const getAllLoaiMon = async (req, res) => {

@@ -5,7 +5,7 @@ import {
     createLoaiMon, 
     updateLoaiMon, 
     deleteLoaiMon 
-} from "../controllers/categoriesController.js";
+} from "../../controllers/Admin/categoriesController.js";
 
 const router = express.Router();
 
