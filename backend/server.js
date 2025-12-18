@@ -5,9 +5,13 @@ import loaiMonRoutes from './routes/Admin/categoriesRoutes.js';
 import monRoutes from './routes/Admin/productsRoutes.js';
 import chiTietProductsRoutes from './routes/Admin/chiTietProductsRoutes.js';
 import staffRoutes from './routes/Admin/staffRoutes.js';
-import orderRoutes from './routes/Admin/ordersRoutes.js'
+import customerRoutes from './routes/Admin/customersRoutes.js';
+import orderRoutes from './routes/Admin/ordersRoutes.js';
+import hoadonRoutes from './routes/Admin/hoadonRoutes.js';
+import thongKeRoutes from './routes/Admin/thongKeRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 
 const app = express();
 const port = 4000;
@@ -22,10 +26,14 @@ app.use('/api/loaimon', loaiMonRoutes);
 app.use('/api/mon', monRoutes);
 app.use('/api/chitietmon', chiTietProductsRoutes);
 app.use('/api/nhanvien',staffRoutes);
+app.use('/api/khachhang',customerRoutes);
 app.use('/api/donhang', orderRoutes);
+app.use('/api/hoadon',hoadonRoutes);
+app.use('/api/thongke',thongKeRoutes);
 // Lấy đường dẫn thư mục hiện tại (cần thiết cho ES Modules)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 //Bất kỳ tệp nào trong 'uploads/' giờ đây có thể được truy cập qua '/uploads'
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

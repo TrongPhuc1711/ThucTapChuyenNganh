@@ -1,7 +1,7 @@
 import { useState,useEffect } from "react";
 import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
-
+import "../../../styles/Dashboard/Orders.css";
 const API_URL = import.meta.env.VITE_URL_URL;
 
 export default function Orders() {
@@ -34,7 +34,7 @@ export default function Orders() {
   
     const loadChiTietDonHang = async (maDH) => {
       try {
-        const res = await api.get(`/donhang/${maDH}/chitiet`);
+        const res = await api.get(`/donhang/chitiet/${maDH}`);
         setChiTietDonHang(res.data);
       } catch (err) {
         console.error(err);
@@ -129,7 +129,15 @@ export default function Orders() {
     const formatCurrency = (amount) => {
       return Number(amount).toLocaleString('vi-VN') + ' đ';
     };
-  
+    const getImageUrl = (imagePath) => {
+      if (!imagePath) return "/placeholder.png";
+      // Nếu đã có đầy đủ URL thì return luôn
+      if (imagePath.startsWith('http')) return imagePath;
+      // Nếu bắt đầu bằng /uploads thì ghép với API_URL
+      if (imagePath.startsWith('/uploads')) return `${API_URL}${imagePath}`;
+      // Các trường hợp khác
+      return `${API_URL}/${imagePath}`;
+    };
     return (
       <DashboardLayout title="Quản lý đơn hàng">
         {message && <div className="message-alert">{message}</div>}
@@ -208,7 +216,7 @@ export default function Orders() {
                               className="btn-view"
                               title="Xem chi tiết"
                             >
-                              👁️
+                              Xem
                             </button>
                             
                             {dh.TrangThai === 'Treo' && (
@@ -235,7 +243,7 @@ export default function Orders() {
                               className="btn-delete"
                               title="Xóa"
                             >
-                              🗑️
+                              Xóa
                             </button>
                           </div>
                         </td>
@@ -295,7 +303,7 @@ export default function Orders() {
                   {chiTietDonHang.map((item, index) => (
                     <div key={index} className="detail-item">
                       <img 
-                        src={item.HinhAnh ? `${API_URL}${item.HinhAnh}` : '/placeholder.jpg'} 
+                        src={getImageUrl(item.HinhAnh)} 
                         alt={item.TenMon}
                         className="detail-item-image"
                         onError={(e) => e.target.src = '/placeholder.jpg'}

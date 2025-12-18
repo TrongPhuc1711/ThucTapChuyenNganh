@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticateToken, authorizeRoles } from "../../middleware/auth.js";
 import { 
     getAllLoaiMon, 
     getLoaiMonById, 
@@ -8,11 +9,13 @@ import {
 } from "../../controllers/Admin/categoriesController.js";
 
 const router = express.Router();
+const adminOnly = [authenticateToken, authorizeRoles('Admin')];
 
 router.get("/", getAllLoaiMon);
 router.get("/:id", getLoaiMonById);
-router.post("/", createLoaiMon);
-router.put("/:id", updateLoaiMon);
-router.delete("/:id", deleteLoaiMon);
+//chi admin
+router.post("/",adminOnly, createLoaiMon);
+router.put("/:id",adminOnly, updateLoaiMon);
+router.delete("/:id",adminOnly, deleteLoaiMon);
 
 export default router;

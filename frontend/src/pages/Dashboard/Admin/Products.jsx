@@ -318,7 +318,7 @@ export default function Products() {
                           <img 
                             src={`${API_URL}${m.HinhAnh}`} 
                             alt={m.TenMon} 
-                            className="product-image"
+                            className="dashboard-product-image"
                             onError={(e) => e.target.src = '/caphesua.jpg'}
                           />
                         ) : (

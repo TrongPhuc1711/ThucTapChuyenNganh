@@ -20,7 +20,7 @@ export default function Categories() {
       setLoaiMons(res.data);
     } catch (err) {
       console.error(err);
-      setMessage("❌ Lỗi khi tải danh sách loại món");
+      setMessage("Lỗi khi tải danh sách loại món");
     }
   };
 

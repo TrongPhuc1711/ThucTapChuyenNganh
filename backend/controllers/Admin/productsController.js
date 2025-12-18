@@ -198,7 +198,7 @@ export const deleteMon = async (req, res) => {
         }
 
 
-        await connection.commit
+        await connection.commit();
         res.json({ message: "✅ Xóa món thành công" });
     } catch (err) {
         await connection.rollback();

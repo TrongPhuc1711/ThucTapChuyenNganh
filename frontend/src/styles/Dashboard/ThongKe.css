@@ -1,0 +1,193 @@
+.tk-loading-text {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 16px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Stats Grid - Override chitiet-grid cho responsive tốt hơn */
+  .tk-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  /* Stat Cards - Gradient đẹp cho từng loại thống kê */
+  .tk-stat-card-doanhthu,
+  .tk-stat-card-donhang,
+  .tk-stat-card-sanpham {
+    color: white;
+    padding: 25px;
+    transition: all 0.3s;
+  }
+  
+  .tk-stat-card-doanhthu:hover,
+  .tk-stat-card-donhang:hover,
+  .tk-stat-card-sanpham:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+  
+  /* Doanh thu - Xanh lá */
+  .tk-stat-card-doanhthu {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+  }
+  
+  /* Đơn hàng - Hồng */
+  .tk-stat-card-donhang {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  }
+  
+  /* Sản phẩm - Xanh dương */
+  .tk-stat-card-sanpham {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+  }
+  
+  /* Stat Card Title */
+  .tk-stat-card-doanhthu h3,
+  .tk-stat-card-donhang h3,
+  .tk-stat-card-sanpham h3 {
+    margin: 0 0 15px 0;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  
+  /* Stat Value - Số liệu lớn */
+  .tk-stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+  
+  .tk-stat-unit {
+    font-size: 18px;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  
+  /* Detail Title */
+  .tk-detail-title {
+    color: #6f4e37;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  
+  /* Chart Container */
+  .tk-chart-container {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  
+  .tk-chart-box {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  
+  .tk-chart-title {
+    color: #6f4e37;
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  
+  /* Percent Badge */
+  .tk-percent-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  /* Table Header với Gradient */
+  .list-section table thead tr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  .list-section table thead th {
+    color: white;
+    font-weight: 600;
+    padding: 15px 12px;
+  }
+  
+  /* Table Row Hover Effect */
+  .list-section table tbody tr {
+    transition: all 0.3s;
+  }
+  
+  .list-section table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.005);
+  }
+  
+  /* Responsive cho Mobile */
+  @media (max-width: 1024px) {
+    .tk-chart-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .tk-stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .tk-stat-value {
+      font-size: 28px;
+    }
+    
+    .tk-stat-unit {
+      font-size: 16px;
+    }
+    
+    .tk-stat-card-doanhthu,
+    .tk-stat-card-donhang,
+    .tk-stat-card-sanpham {
+      padding: 20px;
+    }
+  
+    .tk-chart-box {
+      padding: 15px;
+    }
+  
+    .tk-chart-title {
+      font-size: 16px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .tk-stat-value {
+      font-size: 24px;
+    }
+    
+    .tk-stat-unit {
+      font-size: 14px;
+    }
+  }

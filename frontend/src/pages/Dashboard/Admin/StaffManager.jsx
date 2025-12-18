@@ -30,7 +30,7 @@ export default function StaffManager() {
       setFilteredStaffs(res.data);
     } catch (err) {
       console.error(err);
-      setMessage("❌ Không thể tải danh sách nhân viên");
+      setMessage("Không thể tải danh sách nhân viên");
     }
   };
 
@@ -50,7 +50,7 @@ export default function StaffManager() {
     }
   }, [searchText, staffs]);
 
-  // 🔹 Submit form thêm/sửa
+  //Submit form thêm/sửa
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading) return;
@@ -69,7 +69,7 @@ export default function StaffManager() {
       loadStaffs();
 
     } catch (err) {
-      setMessage("❌ " + (err.response?.data?.message || "Lỗi thao tác"));
+      setMessage((err.response?.data?.message || "Lỗi thao tác"));
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(""), 3000);
@@ -94,10 +94,10 @@ export default function StaffManager() {
 
     try {
       await api.delete(`/nhanvien/${id}`);
-      setMessage("✅ Đã xóa nhân viên");
+      setMessage("Đã xóa nhân viên");
       loadStaffs();
     } catch (err) {
-      setMessage("❌ Không thể xóa nhân viên này");
+      setMessage("Không thể xóa nhân viên này");
     } finally {
       setTimeout(() => setMessage(""), 3000);
     }
@@ -115,7 +115,7 @@ export default function StaffManager() {
 
       {/* FORM */}
       <div className="form-section">
-        <h2>{editingMa ? "✏️ Sửa Nhân Viên" : "➕ Thêm Nhân Viên Mới"}</h2>
+        <h2>{editingMa ? "Sửa Nhân Viên" : "Thêm Nhân Viên Mới"}</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="form-row">
@@ -171,12 +171,12 @@ export default function StaffManager() {
               {isLoading
                 ? "Đang xử lý..."
                 : editingMa
-                ? "💾 Cập nhật"
-                : "➕ Thêm mới"}
+                ? "Cập nhật"
+                : "Thêm mới"}
             </button>
             {editingMa && (
               <button type="button" onClick={resetForm} className="btn-cancel">
-                ✖️ Hủy
+                Hủy
               </button>
             )}
           </div>
@@ -186,7 +186,7 @@ export default function StaffManager() {
       {/* LIST + SEARCH */}
       <div className="list-section">
         <div className="list-header">
-          <h2>📋 Danh Sách Nhân Viên ({filteredStaffs.length})</h2>
+          <h2>📋Danh Sách Nhân Viên ({filteredStaffs.length})</h2>
 
           <input
             type="text"
@@ -235,13 +235,13 @@ export default function StaffManager() {
                         className="btn-edit"
                         onClick={() => handleEdit(nv)}
                       >
-                        ✏️
+                        Sửa
                       </button>
                       <button
                         className="btn-delete"
                         onClick={() => handleDelete(nv.MaND)}
                       >
-                        🗑️
+                        Xóa
                       </button>
                     </div>
                   </td>

@@ -23,8 +23,8 @@ export const getChiTietMonByMaMon =async (req,res) =>{
 export const getChiTietMonByMa =async (req,res) =>{
     try {
         const { ma }= req.params;
-        const [chiTiet] =await pool.query("SELECT * FROM ChiTietMon WHERE MaCTM = ?", [ma]);
-        if (chiTiet.length === 0) {
+        const [chitiet] =await pool.query("SELECT * FROM ChiTietMon WHERE MaCTM = ?", [ma]);
+        if (chitiet.length === 0) {
             return res.status(404).json({ message: "Không tìm thấy chi tiết món" });
         }
         res.json(chitiet[0]);
@@ -78,7 +78,7 @@ export const createChiTietMon = async (req, res) => {
 
 export const updateChiTietMon = async (req, res) => {
     try {
-        const { MaCTM } =req.params;
+        const { MaCTM } = req.params;
         const{ Gia, TrangThai } = req.body;
         if(!Gia){
             return res.status(400).json({ message: "Giá không được để trống"});
@@ -112,8 +112,18 @@ export const deleteChiTietMon =async (req, res)=>{
         );
 
         if(orders[0].count > 0){
-            return res.status(400),json({
+            return res.status(400).json({
                 message: "Không thể xóa chi tiết món này vì đã có trong các đơn hàng" 
+            });
+        }
+        const [hoadon] =await pool.query(
+            "SELECT COUNT(*) as count FROM ChiTietHoaDon WHERE MaCTM = ?",
+            [MaCTM]
+        );
+
+        if(hoadon[0].count >0){
+            return res.status(400).json({
+                message: "Không thể xóa chi tiết món này vì đã có trong các hóa đơn"
             });
         }
         const [result] = await pool.query("DELETE FROM ChiTietMon WHERE MaCTM = ?", [MaCTM]);

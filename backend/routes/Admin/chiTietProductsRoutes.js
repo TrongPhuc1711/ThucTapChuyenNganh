@@ -6,13 +6,16 @@ import {
     updateChiTietMon,
     deleteChiTietMon
 } from '../../controllers/Admin/chiTietProductsController.js';
+import { authenticateToken, authorizeRoles } from "../../middleware/auth.js";
 
 const router = express.Router();
+const adminOnly = [authenticateToken, authorizeRoles('Admin')];
 
 router.get('/mon/:mamon', getChiTietMonByMaMon);    //Lay theo mon
 router.get('/:mactm', getChiTietMonByMa);             // Lấy theo ma
-router.post('/', createChiTietMon);                // Thêm
-router.put('/:mactm', updateChiTietMon);              // Sửa
-router.delete('/:mactm', deleteChiTietMon);
+
+router.post('/',adminOnly, createChiTietMon);                // Thêm
+router.put('/:mactm',adminOnly, updateChiTietMon);              // Sửa
+router.delete('/:mactm',adminOnly, deleteChiTietMon);
 
 export default router;

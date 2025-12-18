@@ -8,70 +8,77 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function Home() {
   const navigate = useNavigate();
 
-  // Thêm các state để lưu dữ liệu từ API
   const [mons, setMons] = useState([]);
+  const [loaiMons, setLoaiMons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [user, setUser] = useState(null);
 
-  // Thêm useEffect để tải dữ liệu khi trang được mở
   useEffect(() => {
-    const loadMons = async () => {
-      setIsLoading(true);
-      try {
-        const res = await api.get("/mon");
-        
-        // Load chi tiết món (giá/size) cho mỗi món
-        const monsWithDetails = await Promise.all(
-          res.data.map(async (mon) => {
-            try {
-              const detailRes = await api.get(`/chitietmon/mon/${mon.MaMon}`);
-              return { ...mon, chiTiet: detailRes.data };
-            } catch {
-              return { ...mon, chiTiet: [] };
-            }
-          })
-        );
-        setMons(monsWithDetails);
-        setError(null);
-      } catch (err) {
-        console.error(err);
-        setError("Lỗi khi tải danh sách món");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    loadData();
+    checkUser();
+  }, []);
 
-    loadMons();
-  }, []); // Mảng rỗng [] nghĩa là chỉ chạy 1 lần
+  const checkUser = () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  };
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [monsRes, loaiMonsRes] = await Promise.all([
+        api.get("/mon"),
+        api.get("/loaimon")
+      ]);
+
+      const monsWithDetails = await Promise.all(
+        monsRes.data.map(async (mon) => {
+          try {
+            const detailRes = await api.get(`/chitietmon/mon/${mon.MaMon}`);
+            return { ...mon, chiTiet: detailRes.data };
+          } catch {
+            return { ...mon, chiTiet: [] };
+          }
+        })
+      );
+
+      setMons(monsWithDetails);
+      setLoaiMons(loaiMonsRes.data);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Lỗi khi tải danh sách món");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddToCart = (mon) => {
-    const user = localStorage.getItem('user');
-    
     if (!user) {
       alert("Vui lòng đăng nhập để thêm món vào giỏ hàng!");
       navigate('/login');
       return; 
     }
 
-    // Lấy giỏ hàng hiện tại
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-
-    // Tạm thời chỉ xử lý 1 size (size đầu tiên)
     const sizeToAdd = mon.chiTiet[0]?.KichCo || 'Nhỏ';
     const priceToAdd = mon.chiTiet[0]?.Gia || 0;
 
-    // 1. Kiểm tra xem món + size này đã có trong giỏ hàng chưa
     const existingItemIndex = cartItems.findIndex(
       (item) => item.MaMon === mon.MaMon && item.KichCo === sizeToAdd
     );
 
     if (existingItemIndex > -1) {
-      // 2. Nếu đã có, chỉ tăng số lượng
       cartItems[existingItemIndex].SoLuong += 1;
     } else {
-      // 3. Nếu chưa có, thêm món mới vào
       const itemToAdd = {
         MaMon: mon.MaMon,
+        MaCTM: mon.chiTiet[0]?.MaCTM,
         TenMon: mon.TenMon,
         HinhAnh: mon.HinhAnh,
         Gia: priceToAdd,
@@ -81,66 +88,162 @@ export default function Home() {
       cartItems.push(itemToAdd);
     }
 
-    // Lưu giỏ hàng mới vào localStorage
     localStorage.setItem('cart', JSON.stringify(cartItems));
-
-    // Thông báo cho người dùng
-    alert(`Đã thêm "${mon.TenMon} (${sizeToAdd})" vào giỏ hàng!`);
+    alert(`✅ Đã thêm "${mon.TenMon} (${sizeToAdd})" vào giỏ hàng!`);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('cart');
+    setUser(null);
+    alert("Đã đăng xuất thành công!");
+  };
+
+  const filteredMons = mons.filter(mon => {
+    const matchSearch = mon.TenMon.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchCategory = !selectedCategory || mon.MaLM === parseInt(selectedCategory);
+    return matchSearch && matchCategory;
+  });
+
   return (
     <div className="home-container">
       {/* Header */}
       <header className="home-header">
         <h2 className="logo" onClick={() => navigate("/")}>P-Coffee</h2>
         <div className="header-buttons">
-          <button onClick={() => navigate("/login")} className="btn-login">Đăng nhập</button>
-          <button onClick={() => navigate("/register")} className="btn-register">Đăng ký</button>
+              <button onClick={() => navigate("/login")} className="btn-login">
+                Đăng nhập
+              </button>
+              <button onClick={() => navigate("/register")} className="btn-register">
+                Đăng ký
+              </button>
         </div>
       </header>
 
       {/* Banner */}
       <section className="home-banner">
-        <h1 className="home-title">Chào mừng đến với P-Coffee</h1>
-        <p className="home-subtitle">
-          Thưởng thức cà phê tuyệt vời, mọi lúc mọi nơi
-        </p>
+        <div className="banner-content">
+          <h1 className="home-title">Chào mừng đến với P-Coffee</h1>
+          <p className="home-subtitle">
+            ☕Thưởng thức cà phê tuyệt vời, mọi lúc mọi nơi
+          </p>
+          <button onClick={() => navigate("/login")} className="btn-order-now">
+            Đặt hàng ngay
+          </button>
+        </div>
       </section>
 
-      {/* Featured Products (Đã sửa lại để dùng dữ liệu động) */}
-      <section className="product-section">
-        <h2 className="section-title">Sản phẩm nổi bật</h2>
+      {/* Search & Filter */}
+      <section className="filter-section">
+        <div className="filter-container">
+          <input
+            type="text"
+            placeholder="🔍 Tìm kiếm món..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="category-select"
+          >
+            <option value="">📋 Tất cả danh mục</option>
+            {loaiMons.map(lm => (
+              <option key={lm.MaLM} value={lm.MaLM}>{lm.TenLM}</option>
+            ))}
+          </select>
+        </div>
+      </section>
 
-        {isLoading && <p style={{ textAlign: 'center' }}>Đang tải món...</p>}
-        {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+      {/* Category Pills */}
+      <section className="category-pills">
+        <button 
+          className={`pill ${!selectedCategory ? 'active' : ''}`}
+          onClick={() => setSelectedCategory("")}
+        >
+          Tất cả
+        </button>
+        {loaiMons.map(lm => (
+          <button 
+            key={lm.MaLM}
+            className={`pill ${selectedCategory === lm.MaLM.toString() ? 'active' : ''}`}
+            onClick={() => setSelectedCategory(lm.MaLM.toString())}
+          >
+            {lm.TenLM}
+          </button>
+        ))}
+      </section>
+
+      {/* Products */}
+      <section className="product-section">
+        <h2 className="section-title">🌟 Sản phẩm của chúng tôi</h2>
+
+        {isLoading && (
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Đang tải món...</p>
+          </div>
+        )}
+        
+        {error && <p className="error-message">{error}</p>}
 
         {!isLoading && !error && (
           <div className="product-list">
-            {mons.length === 0 ? (
-              <p style={{ textAlign: 'center' }}>Chưa có món nào được thêm.</p>
+            {filteredMons.length === 0 ? (
+              <p className="empty-message">Không tìm thấy món nào phù hợp</p>
             ) : (
-              // Dùng .map() để lặp qua danh sách món
-              mons.map((mon) => {
-                // Lấy giá của size đầu tiên (ví dụ: size Nhỏ) để hiển thị
-                const displayPrice = mon.chiTiet && mon.chiTiet.length > 0 
-                  ? mon.chiTiet[0].Gia 
+              filteredMons.map((mon) => {
+                const minPrice = mon.chiTiet && mon.chiTiet.length > 0 
+                  ? Math.min(...mon.chiTiet.map(ct => ct.Gia))
+                  : 0;
+                const maxPrice = mon.chiTiet && mon.chiTiet.length > 0 
+                  ? Math.max(...mon.chiTiet.map(ct => ct.Gia))
                   : 0;
                 
-                // Lấy hình ảnh (nếu không có thì dùng ảnh dự phòng)
                 const displayImage = mon.HinhAnh 
                   ? `${API_URL}${mon.HinhAnh}` 
-                  : cafesua; // Dùng 'cafesua' làm ảnh dự phòng chung
+                  : '/placeholder.jpg';
 
                 return (
                   <div className="product-card" key={mon.MaMon}>
-                    <img 
-                      src={displayImage} 
-                      alt={mon.TenMon} 
-                      // Thêm dự phòng nếu ảnh từ API bị lỗi
-                      onError={(e) => { e.target.src = cafesua; }}
-                    />
-                    <h3>{mon.TenMon}</h3>
-                    <p>{Number(displayPrice).toLocaleString('vi-VN')} đ</p>
-                    <button onClick={() => handleAddToCart(mon)} className="btn-add">Thêm vào giỏ</button>
+                    <div className="product-image-wrapper">
+                      <img 
+                        src={displayImage} 
+                        alt={mon.TenMon} 
+                        onError={(e) => { e.target.src = '/placeholder.jpg'; }}
+                      />
+                      {mon.chiTiet && mon.chiTiet.length > 1 && (
+                        <span className="badge-sizes">{mon.chiTiet.length} sizes</span>
+                      )}
+                    </div>
+                    <div className="product-content">
+                      <h3 className="product-name">{mon.TenMon}</h3>
+                      <p className="product-category">{mon.TenLM || 'Khác'}</p>
+                      {mon.MoTa && (
+                        <p className="product-description">{mon.MoTa}</p>
+                      )}
+                      <div className="product-footer">
+                        <div className="price-wrapper">
+                          {minPrice === maxPrice ? (
+                            <span className="price">
+                              {Number(minPrice).toLocaleString('vi-VN')}đ
+                            </span>
+                          ) : (
+                            <span className="price">
+                              {Number(minPrice).toLocaleString('vi-VN')}đ - {Number(maxPrice).toLocaleString('vi-VN')}đ
+                            </span>
+                          )}
+                        </div>
+                        <button 
+                          onClick={() => handleAddToCart(mon)} 
+                          className="btn-add"
+                        >
+                          🛒 Thêm
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               })
@@ -149,16 +252,32 @@ export default function Home() {
         )}
       </section>
 
-      {/* Information Section */}
+      {/* Info Section */}
       <section className="info-section">
-        <h2 className="section-title">Thông tin quán</h2>
+        <h2 className="section-title">📍 Thông tin quán</h2>
         <div className="info-content">
-          <p>
-            📍 Địa chỉ: 123 Cafe, Quận 8, TP.HCM <br />
-            ⏰ Giờ mở cửa: 08:00 AM - 10:00 PM
-          </p>
+          <div className="info-card">
+            <div className="info-icon">📍</div>
+            <h3>Địa chỉ</h3>
+            <p>123 Cafe, Quận 8, TP.HCM</p>
+          </div>
+          <div className="info-card">
+            <div className="info-icon">⏰</div>
+            <h3>Giờ mở cửa</h3>
+            <p>08:00 AM - 10:00 PM</p>
+          </div>
+          <div className="info-card">
+            <div className="info-icon">📞</div>
+            <h3>Liên hệ</h3>
+            <p>0123 456 789</p>
+          </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="home-footer">
+        <p>© 2024 P-Coffee. All rights reserved.</p>
+      </footer>
     </div>
   );
-};
+}
