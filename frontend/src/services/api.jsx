@@ -9,7 +9,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
       // 1. Lấy token từ localStorage
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('token');
       // 2. Nếu có token, tự động đính vào Header
       if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -30,7 +30,7 @@ api.interceptors.response.use(
       // Nếu API trả về lỗi 401 (Unauthorized) hoặc 403 (Forbidden)
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
           // Xóa token cũ đi
-          localStorage.removeItem('accessToken');
+          localStorage.removeItem('token');
           
           // Đá người dùng về trang đăng nhập
           window.location.href = '/login';

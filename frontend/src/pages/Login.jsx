@@ -13,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await api.post("/auth/login", { Email, MatKhau });
-      localStorage.setItem("accessToken", res.data.token);
+      localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       setMsg("✅Đăng nhập thành công!");
 

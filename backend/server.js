@@ -9,6 +9,7 @@ import customerRoutes from './routes/Admin/customersRoutes.js';
 import orderRoutes from './routes/Admin/ordersRoutes.js';
 import hoadonRoutes from './routes/Admin/hoadonRoutes.js';
 import thongKeRoutes from './routes/Admin/thongKeRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -30,7 +31,8 @@ app.use('/api/khachhang',customerRoutes);
 app.use('/api/donhang', orderRoutes);
 app.use('/api/hoadon',hoadonRoutes);
 app.use('/api/thongke',thongKeRoutes);
-// Lấy đường dẫn thư mục hiện tại (cần thiết cho ES Modules)
+app.use('/api/paymentVnPay',paymentRoutes)
+// Lấy đường dẫn thư mục hiện tại
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

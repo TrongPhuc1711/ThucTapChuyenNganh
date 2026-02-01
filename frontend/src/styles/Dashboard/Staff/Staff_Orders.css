@@ -209,7 +209,7 @@
     color: #2c3e50;
 }
 
-.btn-close {
+.btn-close-staff-order {
     background: none;
     border: none;
     font-size: 1.8rem;
@@ -218,7 +218,7 @@
     transition: color 0.3s;
 }
 
-.btn-close:hover {
+.btn-close-staff-order:hover {
     color: #e74c3c;
 }
 
@@ -359,4 +359,113 @@
 .btn-status:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.btn-create-new-staff {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.btn-create-new-staff:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-create-new-staff:active {
+    transform: translateY(0);
+}
+
+/* Điều chỉnh filters-section */
+.filters-section {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .btn-create-new,
+    .btn-create-new-staff {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+    }
+
+    .order-search-bar {
+        width: 100%;
+    }
+
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+/* Nút in hóa đơn */
+.btn-print-action {
+    display: flex;
+    align-items: center;       
+    justify-content: center;   
+    gap: 8px;                  
+    
+    padding: 10px 20px;        
+    background-color: #6c757d; 
+    color: white;              
+    
+    border: none;
+    border-radius: 8px;        
+    font-weight: 600;          
+    font-size: 0.95rem;        
+    cursor: pointer;           
+    
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+
+.btn-print-action:hover {
+    background-color: #5a6268; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); 
+}
+
+
+.btn-print-action:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+
+.btn-close-action {
+    padding: 10px 20px;
+    background-color: white;
+    color: #e74c3c;            
+    border: 1px solid #e74c3c; 
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.btn-close-action:hover {
+    background-color: #fff5f5; 
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
 }

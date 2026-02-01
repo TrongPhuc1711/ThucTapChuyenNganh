@@ -1,0 +1,161 @@
+/* Overlay modal */
+.invoice-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 11000;
+}
+
+.invoice-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Phần hiển thị hóa đơn */
+.invoice-preview {
+    border: 1px dashed #ccc;
+    padding: 20px;
+    margin: 15px 0;
+    font-family: 'Courier New', Courier, monospace;
+    background: #fff;
+    color: #000;
+}
+
+.invoice-company-info {
+    text-align: center;
+}
+
+.invoice-company-info h2 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.invoice-title-section {
+    text-align: center;
+    margin: 15px 0;
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
+}
+
+.invoice-title-section h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.invoice-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.invoice-items-table th {
+    border-bottom: 1px solid #000;
+    padding: 5px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.invoice-items-table td {
+    border-bottom: 1px dotted #ccc;
+    padding: 5px;
+    text-align: left;
+}
+
+.invoice-items-table tfoot td {
+    border-top: 2px solid #000;
+    padding-top: 10px;
+    font-size: 16px;
+}
+
+.invoice-footer-note {
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
+    border-top: 1px solid #000;
+    padding-top: 10px;
+}
+
+.invoice-actions-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-confirm-print-invoice {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-cancel-print-invoice {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* --- QUAN TRỌNG: Cấu hình khi IN --- */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #invoice-print-area, #invoice-print-area * {
+        visibility: visible;
+    }
+
+    #invoice-print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .invoice-modal-overlay {
+        position: absolute;
+        background: none;
+        width: 100%;
+        height: auto;
+        z-index: 99999;
+    }
+
+    .invoice-modal-content {
+        box-shadow: none;
+        width: 100%;
+        max-width: none;
+        padding: 0;
+        margin: 0;
+        border: none;
+    }
+
+    .invoice-actions-buttons, 
+    .invoice-header-title {
+        display: none !important;
+    }
+}

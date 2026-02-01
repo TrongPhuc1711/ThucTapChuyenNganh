@@ -1,6 +1,6 @@
 import express from "express";
 import {
-    getAllOrdrers,
+    getAllOrders,
     getOrderByMa,
     getOrdersByUser,
     getChiTietDonHang,
@@ -11,18 +11,24 @@ import {
 import { authenticateToken, authorizeRoles } from "../../middleware/auth.js";
 const router = express.Router();
 const adminOnly = [authenticateToken, authorizeRoles('Admin')];
-const staffAndAdmin =[authenticateToken, authorizeRoles('Admin', 'NhanVien')];
+const staffAndAdmin = [authenticateToken, authorizeRoles('Admin', 'NhanVien')];
 
-// Xem danh sách: Có thể để Admin hoặc NhanVien
-router.get("/", getAllOrdrers);
-router.get("/user/:mand", staffAndAdmin, getOrdersByUser);
-router.get("/chitiet/:madh",staffAndAdmin,getChiTietDonHang);
-// Xem chi tiết đơn
-router.get("/:ma", staffAndAdmin, getOrderByMa);
-//Nhan vien duoc cap nhat trang thai don hang
-router.put("/:ma",staffAndAdmin,updateOrders);
-//Admin xử lý
-router.post("/",adminOnly,createOrders);
-router.delete("/:ma",adminOnly,deleteOrders);
+// Xem danh sách đơn hàng
+router.get("/", getAllOrders);
+
+router.get("/chitiet/:madh",  getChiTietDonHang);
+router.get("/user/:mand",  getOrdersByUser);
+
+// Route động phải đặt CUỐI CÙNG
+router.get("/:ma",  getOrderByMa);
+
+// CHO PHÉP CẢ NHÂN VIÊN VÀ ADMIN TẠO ĐỠN HÀNG
+router.post("/", createOrders);
+
+// Nhân viên và Admin được cập nhật trạng thái đơn hàng
+router.put("/:ma",staffAndAdmin,  updateOrders);
+
+// Chỉ Admin mới được xóa
+router.delete("/:ma", adminOnly, deleteOrders);
 
 export default router;

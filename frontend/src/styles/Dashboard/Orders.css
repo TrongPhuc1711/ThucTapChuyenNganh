@@ -361,7 +361,7 @@
     gap: 10px;
   }
   
-  .btn-close-modal {
+  .btn-close-modal-order {
     padding: 10px 25px;
     background: #6c757d;
     color: white;
@@ -373,8 +373,8 @@
     transition: all 0.3s;
   }
   
-  .btn-close-modal:hover {
-    background: #5a6268;
+  .btn-close-modal-order:hover {
+    background: #f00;
     transform: translateY(-2px);
   }
   
@@ -434,3 +434,40 @@
       min-width: 80px;
     }
   }
+  .btn-create-new {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    margin-left: 15px;
+}
+
+.btn-create-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-create-new:active {
+    transform: translateY(0);
+}
+
+/* Điều chỉnh order-search-bar để chứa nút mới */
+.order-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.order-search-input {
+    flex: 1;
+    min-width: 250px;
+}

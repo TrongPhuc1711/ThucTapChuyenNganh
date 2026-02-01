@@ -73,7 +73,7 @@ export default function ThongKe() {
     if (!kq?.ChiTiet) return [];
     return kq.ChiTiet.map(item => ({
       name: item.TenMon,
-      value: item.ThanhTien
+      value: Number(item.ThanhTien)
     }));
   };
 

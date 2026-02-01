@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../../../components/DashboardLayout";
 import '../../../styles/Dashboard/BillManager.css';
 import api from "../../../services/api";
-
+import { Trash2, Edit, Printer } from 'lucide-react';
+import InvoicePrint from "../../../components/InvoicePrint";
 export default function BillManager() {
   const [bills, setBills] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedBill, setSelectedBill] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // State riêng cho chức năng IN
+  const [printBillData, setPrintBillData] = useState(null);
+  const [printBillItems, setPrintBillItems] = useState([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   useEffect(() => {
     loadBills();
   }, []);
@@ -30,25 +35,50 @@ export default function BillManager() {
       b.TrangThai?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Lấy chi tiết hóa đơn
-  const openDetail = async (id) => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/hoadon/${id}`);
-      setSelectedBill(res.data);
-    } catch (err) {
-      alert("Lỗi tải chi tiết hóa đơn");
+  const handleDelete = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác!")) {
+        try {
+            await api.delete(`/hoadon/${id}`);
+            alert("Đã xóa thành công!");
+            loadBills();
+        } catch (err) {
+            alert("Lỗi khi xóa hóa đơn");
+        }
     }
-    setLoading(false);
   };
-
+  const handleUpdateStatus = async (id, currentStatus) => {
+    const newStatus = prompt("Nhập trạng thái mới (Đã thanh toán / Đã hoàn tiền / Đã hủy):", currentStatus);
+    if (newStatus && newStatus !== currentStatus) {
+        try {
+            await api.put(`/hoadon/${id}`, { TrangThai: newStatus });
+            alert("Cập nhật trạng thái thành công!");
+            loadBills();
+        } catch (err) {
+            alert("Lỗi cập nhật");
+        }
+    }
+};
   const closeDetail = () => setSelectedBill(null);
-
+  const handlePrintClick = async (bill) => {
+    try {
+        // 1. Lấy chi tiết món ăn từ API (dựa vào MaDH)
+        const res = await api.get(`/donhang/chitiet/${bill.MaDH}`);
+        
+        // 2. Set dữ liệu vào state
+        setPrintBillData(bill);
+        setPrintBillItems(res.data);
+        
+        // 3. Mở Modal
+        setShowInvoiceModal(true);
+    } catch (err) {
+        alert("Lỗi: Không thể lấy chi tiết hóa đơn để in!");
+    }
+  };
   return (
-    <DashboardLayout title="📄 Quản Lý Hóa Đơn">
+    <DashboardLayout title="Quản Lý Hóa Đơn">
       <div className="bill-container">
 
-        {/* 🔎 Thanh tìm kiếm */}
+        {/* Thanh tìm kiếm */}
         <div className="search-box">
           <input
             type="text"
@@ -58,7 +88,7 @@ export default function BillManager() {
           />
         </div>
 
-        {/* 📋 Danh sách hóa đơn */}
+        {/*  Danh sách hóa đơn */}
         <table className="bill-table">
           <thead>
             <tr>
@@ -69,7 +99,7 @@ export default function BillManager() {
               <th>Tổng tiền</th>
               <th>HT Thanh toán</th>
               <th>Trạng thái</th>
-              <th>Xem</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -91,9 +121,26 @@ export default function BillManager() {
                   </span>
                 </td>
                 <td>
-                  <button className="btn-view" onClick={() => openDetail(b.MaHD)}>
-                    👁️
+                  <button className="btn-view" style={{backgroundColor: '#6c757d', marginLeft: '5px'}} onClick={() => handlePrintClick(b)}>
+                    <Printer size={16} />
                   </button>
+                  <button 
+                        className="btn-view" 
+                        style={{ backgroundColor: '#f39c12' }}
+                        onClick={() => handleUpdateStatus(b.MaHD, b.TrangThai)}
+                        title="Cập nhật trạng thái"
+                      >
+                        <Edit size={16} />
+                      </button>
+
+                      <button 
+                        className="btn-view" 
+                        style={{ backgroundColor: '#e74c3c' }}
+                        onClick={() => handleDelete(b.MaHD)}
+                        title="Xóa hóa đơn"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                 </td>
               </tr>
             ))}
@@ -106,25 +153,12 @@ export default function BillManager() {
           </tbody>
         </table>
 
-        {/* 📌 Popup chi tiết hóa đơn */}
-        {selectedBill && (
-          <div className="modal-backdrop" onClick={closeDetail}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>🧾 Chi tiết hóa đơn #{selectedBill.MaHD}</h2>
-
-              <p><b>Khách hàng: </b>{selectedBill.TenKhach}</p>
-              <p><b>Ngày đặt: </b>{selectedBill.NgayDat?.split("T")[0]}</p>
-              <p><b>Địa chỉ giao hàng: </b>{selectedBill.DiaChiGiaoHang}</p>
-              <p><b>Người nhận: </b>{selectedBill.TenNguoiNhan}</p>
-              <p><b>SĐT: </b>{selectedBill.SDTNguoiNhan}</p>
-
-              <p><b>Tổng tiền: </b>{Number(selectedBill.TongTien).toLocaleString()} đ</p>
-              <p><b>Trạng thái: </b>{selectedBill.TrangThai}</p>
-              <p><b>Thanh toán: </b>{selectedBill.HinhThucThanhToan}</p>
-
-              <button className="btn-close" onClick={closeDetail}>Đóng</button>
-            </div>
-          </div>
+        {showInvoiceModal && printBillData && (
+            <InvoicePrint
+                order={printBillData}
+                items={printBillItems}
+                onClose={() => setShowInvoiceModal(false)}
+            />
         )}
 
       </div>

@@ -3,9 +3,10 @@ import pool from "../config/db.js";
 export const HoaDon = {
     getAll() {
         return pool.execute(
-            `SELECT hd.*, dh.NgayDat, nd.HoTen AS TenKhach
-             FROM HoaDon hd JOIN DonHang dh ON hd.MaDH = dh.MaDH
-                            JOIN NguoiDung nd ON dh.MaND = nd.MaND
+            `SELECT hd.*, dh.NgayDat,dh.TenNguoiNhan, dh.SDTNguoiNhan, nd.HoTen as TenKhach  
+             FROM HoaDon hd 
+             JOIN DonHang dh ON hd.MaDH = dh.MaDH
+             LEFT JOIN NguoiDung nd ON dh.MaND= nd.MaND
              ORDER BY hd.MaHD DESC`
         );
     },

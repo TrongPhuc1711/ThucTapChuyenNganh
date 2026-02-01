@@ -178,7 +178,7 @@ export default function Products() {
       <div className="products-content">
         {/* Form Section */}
         <div className="form-section">
-          <h2>{editingMon ? "✏️ Sửa Món" : "➕ Thêm Món Mới"}</h2>
+          <h2>{editingMon ? "Sửa Món" : "Thêm Món Mới"}</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -220,7 +220,7 @@ export default function Products() {
             </div>
 
             <div className="chitiet-section">
-              <h3>💰 Giá theo kích cỡ</h3>
+              <h3>Giá theo kích cỡ</h3>
               <div className="chitiet-grid">
                 {chiTietMonForm.map((ct, index) => (
                   <div key={index} className="size-item">
@@ -263,11 +263,11 @@ export default function Products() {
 
             <div className="form-buttons">
               <button type="submit" className="btn-submit" disabled={isLoading}>
-                {isLoading ? "⏳ Đang xử lý..." : (editingMon ? "💾 Cập nhật" : "➕ Thêm mới")}
+                {isLoading ? "Đang xử lý..." : (editingMon ? "Cập nhật" : "Thêm mới")}
               </button>
               {editingMon && (
                 <button type="button" onClick={cancelEdit} className="btn-cancel" disabled={isLoading}>
-                  ✖️ Hủy
+                  Hủy
                 </button>
               )}
             </div>
@@ -277,7 +277,7 @@ export default function Products() {
         {/* List Section */}
         <div className="list-section">
           <div className="list-header">
-            <h2>📋 Danh Sách Món ({filteredMons.length})</h2>
+            <h2>Danh Sách Món ({filteredMons.length})</h2>
             <div className="filter-group">
               <label>Lọc theo loại:</label>
               <select value={filterLoai} onChange={(e) => setFilterLoai(e.target.value)}>
@@ -351,14 +351,14 @@ export default function Products() {
                             className="btn-edit"
                             title="Sửa"
                           >
-                            ✏️ Sửa
+                            Sửa
                           </button>
                           <button 
                             onClick={() => handleDelete(m.MaMon)} 
                             className="btn-delete"
                             title="Xóa"
                           >
-                            🗑️ Xóa
+                            Xóa
                           </button>
                         </div>
                       </td>

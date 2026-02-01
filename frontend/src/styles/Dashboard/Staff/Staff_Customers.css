@@ -1,0 +1,209 @@
+/* --- BỐ CỤC CHUNG --- */
+.customers-container {
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+
+.customers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 20px;
+}
+
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.customers-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    flex-grow: 1;
+}
+
+.btn-add-cust {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.btn-add-cust:hover {
+    background-color: #219150;
+    transform: translateY(-1px);
+}
+
+/* --- Ô TÌM KIẾM --- */
+.search-box input {
+    padding: 10px 15px;
+    width: 300px;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+    border-color: #3498db;
+}
+
+/* --- BẢNG KHÁCH HÀNG --- */
+.cust-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.cust-table th, 
+.cust-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.cust-table th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+}
+
+.cust-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.btn-edit-cust {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.btn-edit-cust:hover {
+    background-color: #e67e22;
+}
+
+/* --- MODAL FORM (CHUNG CHO SỬA VÀ THÊM) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-header {
+    background-color: #34495e;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 { margin: 0; font-size: 18px; }
+.btn-close-modal { background: none; border: none; color: white; font-size: 20px; cursor: pointer; opacity: 0.8; }
+.btn-close-modal:hover { opacity: 1; }
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh; /* Giới hạn chiều cao nếu form dài */
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.input-disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    text-align: right;
+    border-top: 1px solid #eee;
+}
+
+.btn-save { 
+    background: #27ae60; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    margin-right: 10px; 
+    font-weight: 500;
+}
+.btn-save:hover { background: #219150; }
+
+.btn-cancel { 
+    background: #95a5a6; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: 500;
+}
+.btn-cancel:hover { background: #7f8c8d; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
