@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT||4000;
 
 // middleware
 app.use(cors());//Nhận yêu cầu từ frontend
@@ -45,5 +45,5 @@ app.get('/api', (req, res) => {
 
 //Khởi động server
 app.listen(port, () => {
-    console.log(`Backend server đang chạy tại http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
 });
