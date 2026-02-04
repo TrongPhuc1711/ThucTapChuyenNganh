@@ -13,7 +13,7 @@ export default function StaffProducts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
 
-  const API_URL = "http://localhost:4000";
+  const API_URL = "https://thuctapchuyennganh.onrender.com";
   useEffect(() => {
     fetchData();
   }, []);

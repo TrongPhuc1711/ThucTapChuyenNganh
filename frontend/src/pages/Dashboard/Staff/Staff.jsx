@@ -4,6 +4,7 @@ import axios from "axios";
 import "../../../styles/Dashboard/Staff/StaffDashboard.css";
 
 export default function Staff() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const [statistics, setStatistics] = useState({
     totalOrders: 0,
@@ -20,7 +21,7 @@ export default function Staff() {
   const fetchStatistics = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:4000/api/donhang", {
+      const response = await axios.get(`${API_URL}/api/donhang`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

@@ -43,6 +43,25 @@ app.get('/api', (req, res) => {
     res.json({ message: 'Chào mừng đến với P-Coffee API!' });
 });
 
+// Serve static files từ frontend build (production)
+const frontendPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendPath));
+
+// Fallback: Tất cả các routes không phải API sẽ trả về index.html để React Router xử lý (SPA routing)
+app.get('*', (req, res, next) => {
+    // Bỏ qua nếu là API route hoặc uploads route
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return next();
+    }
+    // Trả về index.html cho tất cả các routes khác (React Router sẽ xử lý)
+    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
+        if (err) {
+            console.error('Error sending index.html:', err);
+            res.status(500).send('Error loading application');
+        }
+    });
+});
+
 //Khởi động server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

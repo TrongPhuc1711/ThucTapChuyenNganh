@@ -7,7 +7,7 @@ import InvoicePrint from "../../../components/InvoicePrint";
 import { Printer } from 'lucide-react';
 
 // 1. Khai báo API_URL dùng chung
-const API_URL = "http://localhost:4000/api";
+const API_URL = "https://thuctapchuyennganh.onrender.com/api";
 
 export default function StaffOrders() {
     const navigate = useNavigate();

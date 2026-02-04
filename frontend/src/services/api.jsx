@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// Lấy API URL từ env hoặc dùng relative path nếu không có
+const apiUrl = import.meta.env.VITE_API_URL || '';
+const baseURL = apiUrl ? `${apiUrl}/api` : '/api';
+
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
