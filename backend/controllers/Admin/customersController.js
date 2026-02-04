@@ -51,7 +51,7 @@ export const createKhachHang = async (req, res) => {
         //Tạo user trước
         const hashPassword = await bcrypt.hash(MatKhau, 10);
         const [userResult] = await connection.query(
-            "INSERT INTO nguoidung (HoTen, Email, MatKhau, VaiTro) VALUES (?, ?, ?, ?)",
+            "INSERT INTO NguoiDung (HoTen, Email, MatKhau, VaiTro) VALUES (?, ?, ?, ?)",
             [HoTen, Email, hashPassword, 'KhachHang']
         );
         const MaND = userResult.insertId;
@@ -138,7 +138,7 @@ export const deleteKhachHang = async (req, res) => {
         
         // Kiểm tra có đơn hàng chưa
         const [orders] = await connection.query(
-            "SELECT COUNT(*) as count FROM donhang WHERE MaND = ?",
+            "SELECT COUNT(*) as count FROM DonHang WHERE MaND = ?",
             [id]
         );
 

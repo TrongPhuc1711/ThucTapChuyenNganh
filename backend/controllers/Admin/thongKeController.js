@@ -25,8 +25,8 @@ export const getDoanhThuTheoNgay = async (req, res) => {
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDonadon h ON ct.MaDH = h.MaDH WHERE DATE(h.NgayLap) = ?), 0) AS SanPhamBan
-            FROM HoaDonadon hd
+                COALESCE((SELECT SUM(SoLuong) FROM ChiTietDonHang ct JOIN HoaDon h ON ct.MaDH = h.MaDH WHERE DATE(h.NgayLap) = ?), 0) AS SanPhamBan
+            FROM HoaDon hd
             WHERE DATE(hd.NgayLap) = ?
         `, [date, date]);
 
@@ -36,10 +36,10 @@ export const getDoanhThuTheoNgay = async (req, res) => {
                 SUM(ctdh.SoLuong) AS SoLuong, 
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
-            FROM HoaDonadon hd
-            JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
-            JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
-            JOIN mon m ON ctm.MaMon = m.MaMon
+            FROM HoaDon hd
+            JOIN ChiTietDonHang ctdh ON hd.MaDH = ctdh.MaDH
+            JOIN ChiTietMon ctm ON ctdh.MaCTM = ctm.MaCTM
+            JOIN Mon m ON ctm.MaMon = m.MaMon
             WHERE DATE(hd.NgayLap) = ?
             GROUP BY m.TenMon
             ORDER BY ThanhTien DESC
@@ -54,15 +54,15 @@ export const getDoanhThuTheoNgay = async (req, res) => {
 // === 2. THỐNG KÊ THEO THÁNG ===
 export const getDoanhThuTheoThang = async (req, res) => {
     try {
-        const { year, month } = req.query;
+        const { year, Month } = req.query;
         const [tongQuan] = await pool.execute(`
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDonadon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ? AND MONTH(h.NgayLap) = ?), 0) AS SanPhamBan
-            FROM HoaDonaDon hd
-            WHERE YEAR(hd.NgayLap) = ? AND MONTH(hd.NgayLap) = ?
-        `, [year, month, year, month]);
+                COALESCE((SELECT SUM(SoLuong) FROM ChiTietDonHang ct JOIN HoaDon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ? AND MonTH(h.NgayLap) = ?), 0) AS SanPhamBan
+            FROM HoaDon hd
+            WHERE YEAR(hd.NgayLap) = ? AND MonTH(hd.NgayLap) = ?
+        `, [year, Month, year, Month]);
 
         
         const [chiTiet] = await pool.execute(`
@@ -71,14 +71,14 @@ export const getDoanhThuTheoThang = async (req, res) => {
                 SUM(ctdh.SoLuong) AS SoLuong, 
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
-            FROM HoaDonadon hd
-            JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
-            JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
-            JOIN mon m ON ctm.MaMon = m.MaMon
-            WHERE YEAR(hd.NgayLap) = ? AND MONTH(hd.NgayLap) = ?
+            FROM HoaDon hd
+            JOIN ChiTietDonHang ctdh ON hd.MaDH = ctdh.MaDH
+            JOIN ChiTietMon ctm ON ctdh.MaCTM = ctm.MaCTM
+            JOIN Mon m ON ctm.MaMon = m.MaMon
+            WHERE YEAR(hd.NgayLap) = ? AND MonTH(hd.NgayLap) = ?
             GROUP BY m.TenMon
             ORDER BY ThanhTien DESC
-        `, [year, month]);
+        `, [year, Month]);
 
         res.json(formatResponse(tongQuan[0], chiTiet));
     } catch (err) {
@@ -94,7 +94,7 @@ export const getDoanhThuTheoNam = async (req, res) => {
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ?), 0) AS SanPhamBan
+                COALESCE((SELECT SUM(SoLuong) FROM ChiTietDonHang ct JOIN HoaDon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ?), 0) AS SanPhamBan
             FROM HoaDon hd
             WHERE YEAR(hd.NgayLap) = ?
         `, [year, year]);
@@ -106,9 +106,9 @@ export const getDoanhThuTheoNam = async (req, res) => {
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
             FROM HoaDon hd
-            JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
-            JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
-            JOIN mon m ON ctm.MaMon = m.MaMon
+            JOIN ChiTietDonHang ctdh ON hd.MaDH = ctdh.MaDH
+            JOIN ChiTietMon ctm ON ctdh.MaCTM = ctm.MaCTM
+            JOIN Mon m ON ctm.MaMon = m.MaMon
             WHERE YEAR(hd.NgayLap) = ?
             GROUP BY m.TenMon
             ORDER BY ThanhTien DESC
