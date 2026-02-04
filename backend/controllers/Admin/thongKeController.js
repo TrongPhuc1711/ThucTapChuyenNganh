@@ -25,8 +25,8 @@ export const getDoanhThuTheoNgay = async (req, res) => {
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN hoadon h ON ct.MaDH = h.MaDH WHERE DATE(h.NgayLap) = ?), 0) AS SanPhamBan
-            FROM hoadon hd
+                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDonadon h ON ct.MaDH = h.MaDH WHERE DATE(h.NgayLap) = ?), 0) AS SanPhamBan
+            FROM HoaDonadon hd
             WHERE DATE(hd.NgayLap) = ?
         `, [date, date]);
 
@@ -36,7 +36,7 @@ export const getDoanhThuTheoNgay = async (req, res) => {
                 SUM(ctdh.SoLuong) AS SoLuong, 
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
-            FROM hoadon hd
+            FROM HoaDonadon hd
             JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
             JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
             JOIN mon m ON ctm.MaMon = m.MaMon
@@ -59,8 +59,8 @@ export const getDoanhThuTheoThang = async (req, res) => {
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN hoadon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ? AND MONTH(h.NgayLap) = ?), 0) AS SanPhamBan
-            FROM hoadon hd
+                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDonadon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ? AND MONTH(h.NgayLap) = ?), 0) AS SanPhamBan
+            FROM HoaDonaDon hd
             WHERE YEAR(hd.NgayLap) = ? AND MONTH(hd.NgayLap) = ?
         `, [year, month, year, month]);
 
@@ -71,7 +71,7 @@ export const getDoanhThuTheoThang = async (req, res) => {
                 SUM(ctdh.SoLuong) AS SoLuong, 
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
-            FROM hoadon hd
+            FROM HoaDonadon hd
             JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
             JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
             JOIN mon m ON ctm.MaMon = m.MaMon
@@ -94,8 +94,8 @@ export const getDoanhThuTheoNam = async (req, res) => {
             SELECT 
                 COALESCE(SUM(hd.TongTien), 0) AS DoanhThu,
                 COUNT(DISTINCT hd.MaHD) AS SoDonHang,
-                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN hoadon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ?), 0) AS SanPhamBan
-            FROM hoadon hd
+                COALESCE((SELECT SUM(SoLuong) FROM chitietdonhang ct JOIN HoaDon h ON ct.MaDH = h.MaDH WHERE YEAR(h.NgayLap) = ?), 0) AS SanPhamBan
+            FROM HoaDon hd
             WHERE YEAR(hd.NgayLap) = ?
         `, [year, year]);
 
@@ -105,7 +105,7 @@ export const getDoanhThuTheoNam = async (req, res) => {
                 SUM(ctdh.SoLuong) AS SoLuong, 
                 SUM(ctdh.SoLuong * ctdh.DonGia) AS ThanhTien,
                 MAX(ctdh.DonGia) AS DonGiaDaiDien
-            FROM hoadon hd
+            FROM HoaDon hd
             JOIN chitietdonhang ctdh ON hd.MaDH = ctdh.MaDH
             JOIN chitietmon ctm ON ctdh.MaCTM = ctm.MaCTM
             JOIN mon m ON ctm.MaMon = m.MaMon
