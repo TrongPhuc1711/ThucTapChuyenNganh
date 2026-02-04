@@ -48,7 +48,7 @@ const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 // Fallback: Tất cả các routes không phải API sẽ trả về index.html để React Router xử lý (SPA routing)
-app.get('*', (req, res, next) => {
+app.get('/*', (req, res, next) => {
     // Bỏ qua nếu là API route hoặc uploads route
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
         return next();
