@@ -5,8 +5,8 @@ export const getAllMon = async (req, res) => {
     try {
         const query = `
             SELECT m.*, l.TenLM 
-            FROM Mon m
-            LEFT JOIN LoaiMon l ON m.MaLM = l.MaLM
+            FROM mon m
+            LEFT JOIN loaimon l ON m.MaLM = l.MaLM
             ORDER BY m.MaMon DESC`;
         const [mons] = await pool.query(query);
         res.json(mons);
@@ -23,7 +23,7 @@ export const getMonById = async (req, res) => {
         const { id } = req.params;
         const query = `
             SELECT m.*, l.TenLM 
-            FROM Mon m
+            FROM mon m
             LEFT JOIN LoaiMon l ON m.MaLM = l.MaLM
             WHERE m.MaMon = ?`;
         const [mons] = await pool.query(query, [id]);
