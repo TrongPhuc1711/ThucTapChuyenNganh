@@ -272,7 +272,7 @@ export default function Home() {
                     : 0;
                   
                   const displayImage = mon.HinhAnh 
-                    ? `${API_URL}${mon.HinhAnh}` 
+                    ? (mon.HinhAnh.startsWith('http') ? mon.HinhAnh : `${API_URL}${mon.HinhAnh}`)
                     : '/placeholder.jpg';
 
                   return (

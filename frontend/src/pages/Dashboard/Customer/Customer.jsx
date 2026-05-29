@@ -349,7 +349,7 @@ export default function Customer() {
                         />
                         
                         <img 
-                          src={item.HinhAnh ? `${API_URL}${item.HinhAnh}` : '/placeholder.jpg'} 
+                          src={item.HinhAnh ? (item.HinhAnh.startsWith('http') ? item.HinhAnh : `${API_URL}${item.HinhAnh}`) : '/placeholder.jpg'} 
                           alt="" 
                           className="w-14 h-14 rounded-xl object-cover border border-coffee-100 flex-shrink-0" 
                         />

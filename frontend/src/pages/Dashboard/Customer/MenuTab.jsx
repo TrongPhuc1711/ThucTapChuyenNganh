@@ -90,7 +90,7 @@ export default function MenuTab({
                   {/* Image container */}
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-coffee-50">
                     <img 
-                      src={mon.HinhAnh ? `${API_URL}${mon.HinhAnh}` : '/placeholder.jpg'} 
+                      src={mon.HinhAnh ? (mon.HinhAnh.startsWith('http') ? mon.HinhAnh : `${API_URL}${mon.HinhAnh}`) : '/placeholder.jpg'} 
                       alt={mon.TenMon} 
                       onError={(e) => e.target.src = '/placeholder.jpg'} 
                       className="w-full h-full object-cover group-hover:scale-115 transition-transform duration-700"
