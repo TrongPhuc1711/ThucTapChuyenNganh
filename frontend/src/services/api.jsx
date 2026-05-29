@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// Lấy API URL từ env hoặc dùng relative path nếu không có
-const apiUrl = import.meta.env.VITE_API_URL || '';
+// Lấy API URL từ env (bỏ qua ở môi trường phát triển cục bộ để dùng proxy)
+const apiUrl = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_URL || "");
 const baseURL = apiUrl ? `${apiUrl}/api` : '/api';
 
 const api = axios.create({

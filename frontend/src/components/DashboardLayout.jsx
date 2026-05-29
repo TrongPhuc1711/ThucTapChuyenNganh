@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import "../styles/Dashboard/Layout.css";
 
 export default function DashboardLayout({ title, children }) {
   const navigate = useNavigate();
@@ -15,16 +14,23 @@ export default function DashboardLayout({ title, children }) {
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        {/* Gọi hàm handleBack thay vì navigate trực tiếp */}
-        <button onClick={handleBack} className="btn-back">
-          ← Quay lại
+    <div className="animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-coffee-500 bg-white rounded-xl border border-coffee-100 hover:bg-coffee-50 hover:text-coffee-700 transition-all duration-200 hover:shadow-sm"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Quay lại
         </button>
-        <h1>{title}</h1>
+        <h1 className="font-heading text-2xl font-bold text-coffee-800">{title}</h1>
       </div>
 
-      <div className="dashboard-content">
+      {/* Content */}
+      <div>
         {children}
       </div>
     </div>

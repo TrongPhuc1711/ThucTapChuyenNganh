@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { ShoppingCart, LogOut, User, History, Coffee, X, Plus, Minus, Search, ChevronDown } from 'lucide-react';
 import api from "../../../services/api";
 
-import "../../../styles/Dashboard/Customer.css";
 import MenuTab from "./MenuTab";
 import ProfileTab from "./ProfileTab";
 import HistoryTab from "./HistoryTab";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.DEV 
+  ? "http://localhost:4000" 
+  : (import.meta.env.VITE_API_URL || "https://thuctapchuyennganh.onrender.com");
 
 export default function Customer() {
   // --- STATE DỮ LIỆU CHUNG ---
@@ -153,89 +154,364 @@ export default function Customer() {
   const filteredMons = mons.filter(m => m.TenMon.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="customer-layout">
-      {notification && <div className={`notification ${notification.type}`}>{notification.message}</div>}
+    <div className="min-h-screen bg-[#faf7f5] text-coffee-800 font-sans flex flex-col relative">
+      {/* Toast Notification */}
+      {notification && (
+        <div className={`fixed top-24 right-6 z-50 px-4 py-3 rounded-2xl text-sm font-semibold shadow-xl border animate-slide-down flex items-center gap-2 ${
+          notification.type === 'error' 
+            ? 'bg-danger-light text-danger border-danger/10' 
+            : 'bg-success-light text-success border-success/10'
+        }`}>
+          <span>{notification.message}</span>
+        </div>
+      )}
 
-      <div className="main-container">
-        {/* NAVBAR */}
-        <nav className="navbar">
-          <div className="navbar-left" onClick={() => setActiveTab('menu')} style={{ cursor: 'pointer' }}>
-            <Coffee className="brand-icon" /> <h1 className="brand-title">P_Coffee</h1>
+      {/* FIXED NAVBAR */}
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-coffee-100/50 shadow-sm transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer flex-shrink-0" onClick={() => { setActiveTab('menu'); setSearchTerm(''); }}>
+            <div className="w-9 h-9 bg-gradient-to-tr from-coffee-700 to-coffee-600 rounded-xl flex items-center justify-center text-white shadow-md">
+              <Coffee size={18} strokeWidth={2.5} />
+            </div>
+            <h1 className="font-heading text-xl font-bold tracking-tight text-coffee-800 hidden sm:block">P-Coffee</h1>
           </div>
-          <div className="nav-search">
-            <Search className="search-icon" />
-            <input type="text" placeholder="Bạn muốn uống gì hôm nay..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+
+          {/* Search bar */}
+          <div className="relative flex-1 max-w-md mx-2">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-coffee-400">
+              <Search size={16} />
+            </span>
+            <input 
+              type="text" 
+              placeholder="Hôm nay bạn muốn uống gì..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 focus:bg-white transition-all duration-300" 
+            />
           </div>
-          <div className="navbar-right">
-            <button onClick={() => setShowCart(true)} className="cart-button">
-              <ShoppingCart className="cart-icon" /> {cart.length > 0 && <span className="cart-badge">{getTotalItems()}</span>}
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            {/* Cart Button */}
+            <button 
+              onClick={() => setShowCart(true)} 
+              className="relative w-10 h-10 rounded-xl bg-coffee-50 border border-coffee-100 hover:bg-coffee-100/50 text-coffee-700 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <ShoppingCart size={18} />
+              {cart.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gold text-white font-bold text-[10px] rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-pulse-soft">
+                  {getTotalItems()}
+                </span>
+              )}
             </button>
+
+            {/* Profile Dropdown */}
             {user ? (
-              <div className="user-menu-wrapper">
-                <div className="user-profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
-                  <span className="user-greeting">Xin chào, {user.HoTen}</span><ChevronDown size={16} />
-                </div>
-                {showUserMenu && (
-                  <div className="dropdown-menu">
-                    <button onClick={() => { setActiveTab('menu'); setShowUserMenu(false); }} className="dropdown-item"><Coffee size={16} /> Thực đơn</button>
-                    <button onClick={() => { setActiveTab('history'); setShowUserMenu(false); }} className="dropdown-item"><History size={16} /> Đơn hàng</button>
-                    <button onClick={() => { setActiveTab('profile'); setShowUserMenu(false); }} className="dropdown-item"><User size={16} /> Quản lý tài khoản</button>
-                    <div className="dropdown-divider"></div>
-                    <button onClick={handleLogout} className="dropdown-item logout-item"><LogOut size={16} /> Đăng xuất</button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)} 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-coffee-100 hover:bg-coffee-50 transition-colors"
+                >
+                  <div className="w-7 h-7 bg-coffee-700 text-white font-semibold rounded-full flex items-center justify-center text-xs">
+                    {user.HoTen.charAt(0).toUpperCase()}
                   </div>
+                  <span className="text-xs font-semibold text-coffee-700 hidden md:block">{user.HoTen}</span>
+                  <ChevronDown size={14} className="text-coffee-400" />
+                </button>
+
+                {showUserMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)}></div>
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-coffee-100 p-2 z-50 animate-scale-in">
+                      <button 
+                        onClick={() => { setActiveTab('menu'); setShowUserMenu(false); }} 
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-coffee-600 hover:bg-coffee-50 hover:text-coffee-955 rounded-xl transition-colors text-left"
+                      >
+                        <Coffee size={15} /> Thực đơn
+                      </button>
+                      <button 
+                        onClick={() => { setActiveTab('history'); setShowUserMenu(false); }} 
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-coffee-600 hover:bg-coffee-50 hover:text-coffee-955 rounded-xl transition-colors text-left"
+                      >
+                        <History size={15} /> Đơn hàng đã mua
+                      </button>
+                      <button 
+                        onClick={() => { setActiveTab('profile'); setShowUserMenu(false); }} 
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-coffee-600 hover:bg-coffee-50 hover:text-coffee-955 rounded-xl transition-colors text-left"
+                      >
+                        <User size={15} /> Quản lý tài khoản
+                      </button>
+                      <div className="h-px bg-coffee-50 my-1"></div>
+                      <button 
+                        onClick={handleLogout} 
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-light/30 rounded-xl transition-colors text-left font-semibold"
+                      >
+                        <LogOut size={15} /> Đăng xuất
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
-            ) : <button className="login-btn-nav" onClick={() => window.location.href = '/login'}>Đăng nhập</button>}
+            ) : (
+              <button 
+                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-coffee-700 to-coffee-600 rounded-xl hover:from-coffee-600 hover:to-coffee-500 shadow-md transition-all"
+                onClick={() => window.location.href = '/login'}
+              >
+                Đăng nhập
+              </button>
+            )}
           </div>
-        </nav>
-
-        <div className="content-scroll">
-          {activeTab === 'menu' && (
-            <MenuTab mons={filteredMons} loaiMons={loaiMons} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} isLoading={isLoading} handleAddToCart={handleAddToCart} API_URL={API_URL} />
-          )}
-          {activeTab === 'history' && (
-            <HistoryTab orders={orders} isLoadingOrders={isLoadingOrders} formatDate={formatDate} getStatusColor={getStatusColor} />
-          )}
-          {activeTab === 'profile' && user && (
-            <ProfileTab user={user} api={api} showNotification={showNotification} loadUser={loadUser} />
-          )}
         </div>
-      </div>
+      </nav>
 
-      {/* --- CART SIDEBAR & MODALS --- */}
+      {/* PAGE CONTAINER */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 pt-24 pb-12">
+        {activeTab === 'menu' && (
+          <MenuTab 
+            mons={filteredMons} 
+            loaiMons={loaiMons} 
+            selectedCategory={selectedCategory} 
+            setSelectedCategory={setSelectedCategory} 
+            isLoading={isLoading} 
+            handleAddToCart={handleAddToCart} 
+            API_URL={API_URL} 
+          />
+        )}
+        {activeTab === 'history' && (
+          <HistoryTab 
+            orders={orders} 
+            isLoadingOrders={isLoadingOrders} 
+            formatDate={formatDate} 
+            getStatusColor={getStatusColor} 
+          />
+        )}
+        {activeTab === 'profile' && user && (
+          <ProfileTab 
+            user={user} 
+            api={api} 
+            showNotification={showNotification} 
+            loadUser={loadUser} 
+          />
+        )}
+      </main>
+
+      {/* --- CART DRAWER (SLIDE IN) --- */}
       {showCart && (
-        <div className="cart-overlay" onClick={() => setShowCart(false)}>
-          <div className="cart-sidebar" onClick={(e) => e.stopPropagation()}>
-            <div className="cart-header"><h3>Giỏ hàng</h3><button onClick={() => setShowCart(false)} className="close-cart-btn"><X /></button></div>
-            <div className="cart-body">
-              {cart.length === 0 ? <div className="cart-empty"><p>Giỏ hàng trống</p></div> : (
-                <div className="cart-items">
-                  <div className="cart-select-all"><label className="checkbox-container"><input type="checkbox" checked={selectedItems.length === cart.length} onChange={selectAllItems} /><span className="checkmark"></span> Chọn tất cả</label></div>
-                  {cart.map((item, index) => (
-                    <div key={index} className={`cart-item ${selectedItems.includes(index) ? 'selected' : ''}`}>
-                      <label className="checkbox-container"><input type="checkbox" checked={selectedItems.includes(index)} onChange={() => toggleSelectItem(index)} /><span className="checkmark"></span></label>
-                      <img src={item.HinhAnh ? `${API_URL}${item.HinhAnh}` : '/placeholder.jpg'} alt="" className="cart-item-image" />
-                      <div className="cart-item-info">
-                        <h4>{item.TenMon}</h4>
-                        <div className="item-size-wrapper"><span className="item-size">{item.KichCo}</span><button className="change-size-btn" onClick={() => handleEditSize(index)}>Đổi size</button></div>
-                        <p>{Number(item.Gia).toLocaleString()}đ</p>
-                        <div className="quantity-controls"><button onClick={() => updateQuantity(index, -1)}><Minus size={14} /></button><span>{item.SoLuong}</span><button onClick={() => updateQuantity(index, 1)}><Plus size={14} /></button></div>
+        <div className="fixed inset-0 z-50 flex justify-end bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowCart(false)}>
+          <div className="bg-white w-full max-w-md h-full flex flex-col shadow-2xl relative animate-slide-right" onClick={(e) => e.stopPropagation()}>
+            {/* Cart Header */}
+            <div className="p-5 border-b border-coffee-100 flex items-center justify-between bg-coffee-50/50">
+              <h3 className="font-heading text-lg font-bold text-coffee-800">Giỏ hàng của bạn</h3>
+              <button onClick={() => setShowCart(false)} className="w-8 h-8 rounded-lg hover:bg-coffee-100/50 text-coffee-500 hover:text-coffee-700 flex items-center justify-center transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Cart Items list */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {cart.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
+                  <span className="text-5xl block">🛒</span>
+                  <h4 className="font-heading font-semibold text-coffee-700">Giỏ hàng trống</h4>
+                  <p className="text-xs text-coffee-400 max-w-[200px]">Hãy khám phá menu của P-Coffee để thêm món nhé!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Select All */}
+                  <div className="flex items-center gap-2 border-b border-coffee-50 pb-3">
+                    <input 
+                      type="checkbox" 
+                      id="select-all"
+                      checked={selectedItems.length === cart.length} 
+                      onChange={selectAllItems}
+                      className="w-4 h-4 rounded text-gold focus:ring-gold border-coffee-300"
+                    />
+                    <label htmlFor="select-all" className="text-xs font-semibold text-coffee-600 cursor-pointer select-none">
+                      Chọn tất cả ({cart.length})
+                    </label>
+                  </div>
+
+                  {/* Item List */}
+                  {cart.map((item, index) => {
+                    const isSelected = selectedItems.includes(index);
+                    return (
+                      <div key={index} className={`flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 ${
+                        isSelected 
+                          ? 'bg-gold/5 border-gold/30 shadow-sm' 
+                          : 'bg-white border-coffee-100/50 hover:bg-coffee-50/30'
+                      }`}>
+                        <input 
+                          type="checkbox" 
+                          checked={isSelected} 
+                          onChange={() => toggleSelectItem(index)}
+                          className="w-4 h-4 rounded text-gold focus:ring-gold border-coffee-300 flex-shrink-0"
+                        />
+                        
+                        <img 
+                          src={item.HinhAnh ? `${API_URL}${item.HinhAnh}` : '/placeholder.jpg'} 
+                          alt="" 
+                          className="w-14 h-14 rounded-xl object-cover border border-coffee-100 flex-shrink-0" 
+                        />
+                        
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex justify-between items-start gap-1">
+                            <h4 className="font-heading text-sm font-bold text-coffee-800 line-clamp-1 leading-snug">{item.TenMon}</h4>
+                            <button onClick={() => removeFromCart(index)} className="text-coffee-300 hover:text-danger p-0.5 rounded transition-colors flex-shrink-0">
+                              <X size={15} />
+                            </button>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-2 py-0.5 bg-coffee-100 text-coffee-600 text-[10px] font-bold rounded-full">
+                              Size {item.KichCo}
+                            </span>
+                            <button className="text-[10px] text-gold font-semibold hover:underline" onClick={() => handleEditSize(index)}>
+                              Đổi size
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="font-bold text-sm text-coffee-700 font-mono">{Number(item.Gia).toLocaleString()}đ</span>
+                            
+                            {/* Quantity buttons */}
+                            <div className="flex items-center bg-coffee-50 border border-coffee-100 rounded-lg px-1.5 py-0.5">
+                              <button onClick={() => updateQuantity(index, -1)} className="text-coffee-400 hover:text-coffee-700 p-1 transition-colors"><Minus size={10} /></button>
+                              <span className="text-xs font-bold text-coffee-800 px-2 font-mono">{item.SoLuong}</span>
+                              <button onClick={() => updateQuantity(index, 1)} className="text-coffee-400 hover:text-coffee-700 p-1 transition-colors"><Plus size={10} /></button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <button onClick={() => removeFromCart(index)} className="remove-item-btn"><X size={18} /></button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
-            {cart.length > 0 && <div className="cart-footer"><div className="cart-summary"><span>Tổng tiền:</span><strong>{getTotalPrice().toLocaleString()}đ</strong></div><button onClick={() => setShowCheckoutModal(true)} className="checkout-btn">Thanh toán</button></div>}
+
+            {/* Cart Footer */}
+            {cart.length > 0 && (
+              <div className="p-5 border-t border-coffee-100 bg-coffee-50/50 space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-coffee-500">Tạm tính ({selectedItems.length || cart.length} món):</span>
+                  <span className="font-heading font-extrabold text-gold text-lg font-mono">{getTotalPrice().toLocaleString()}đ</span>
+                </div>
+                <button 
+                  onClick={() => setShowCheckoutModal(true)} 
+                  className="w-full py-3.5 bg-gradient-to-r from-coffee-700 to-coffee-600 hover:from-coffee-600 hover:to-coffee-500 text-white font-semibold rounded-2xl shadow-lg shadow-coffee-700/10 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  📝 Xác nhận thanh toán
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {showSizeModal && selectedMon && <div className="modal-backdrop" onClick={() => setShowSizeModal(false)}><div className="modal-box" onClick={(e) => e.stopPropagation()}><h3>Chọn kích cỡ - {selectedMon.TenMon}</h3><div className="size-options">{selectedMon.chiTiet.map(ct => (<button key={ct.MaCTM} className="size-option" onClick={() => addToCartWithSize(selectedMon, ct)}><span>{ct.KichCo}</span><span>{Number(ct.Gia).toLocaleString()}đ</span></button>))}</div><button className="modal-cancel" onClick={() => setShowSizeModal(false)}>Hủy</button></div></div>}
-      {showCheckoutModal && <div className="modal-backdrop"><div className="modal-box"><h3>Xác nhận đặt hàng</h3><p>Tổng tiền: <strong>{getTotalPrice().toLocaleString()}đ</strong></p><div className="modal-actions"><button className="confirm-btn" onClick={handleCheckout}>Xác nhận</button><button className="cancel-btn" onClick={() => setShowCheckoutModal(false)}>Hủy</button></div></div></div>}
-      {showDeleteConfirm && <div className="modal-backdrop"><div className="modal-box"><h3>Xóa món?</h3><div className="modal-actions"><button className="confirm-btn delete-confirm" onClick={confirmDelete}>Xóa</button><button className="cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Hủy</button></div></div></div>}
-      {showEditSizeModal && selectedMon && <div className="modal-backdrop" onClick={() => setShowEditSizeModal(false)}><div className="modal-box" onClick={(e) => e.stopPropagation()}><h3>Đổi kích cỡ - {selectedMon.TenMon}</h3><div className="size-options">{selectedMon.chiTiet.map(ct => (<button key={ct.MaCTM} className="size-option" onClick={() => updateSize(ct)}><span>{ct.KichCo}</span><span>{Number(ct.Gia).toLocaleString()}đ</span></button>))}</div><button className="modal-cancel" onClick={() => setShowEditSizeModal(false)}>Hủy</button></div></div>}
+      {/* --- CHỌN SIZE MODAL (LẦN ĐẦU) --- */}
+      {showSizeModal && selectedMon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowSizeModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-coffee-50">
+              <h3 className="font-heading text-lg font-bold text-coffee-800">Chọn kích cỡ</h3>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors" onClick={() => setShowSizeModal(false)}>✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="text-center pb-2">
+                <h4 className="font-heading font-bold text-coffee-800 text-base">{selectedMon.TenMon}</h4>
+                <p className="text-xs text-coffee-400 mt-0.5">{selectedMon.TenLM}</p>
+              </div>
+              
+              <div className="space-y-2">
+                {selectedMon.chiTiet.map(ct => (
+                  <button 
+                    key={ct.MaCTM} 
+                    className="w-full flex items-center justify-between p-3.5 bg-coffee-50 hover:bg-gold/10 border border-coffee-100 hover:border-gold/30 rounded-xl transition-all text-sm font-semibold text-coffee-800 group"
+                    onClick={() => addToCartWithSize(selectedMon, ct)}
+                  >
+                    <span className="group-hover:text-gold-dark transition-colors">Size {ct.KichCo}</span>
+                    <span className="font-mono text-gold">{Number(ct.Gia).toLocaleString()}đ</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-6 pt-0">
+              <button className="w-full py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowSizeModal(false)}>Hủy bỏ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- ĐỔI SIZE MODAL (GIỎ HÀNG) --- */}
+      {showEditSizeModal && selectedMon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowEditSizeModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-coffee-50">
+              <h3 className="font-heading text-lg font-bold text-coffee-800">Thay đổi kích cỡ</h3>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors" onClick={() => setShowEditSizeModal(false)}>✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="text-center pb-2">
+                <h4 className="font-heading font-bold text-coffee-800 text-base">{selectedMon.TenMon}</h4>
+                <p className="text-xs text-coffee-400 mt-0.5">{selectedMon.TenLM}</p>
+              </div>
+              
+              <div className="space-y-2">
+                {selectedMon.chiTiet.map(ct => (
+                  <button 
+                    key={ct.MaCTM} 
+                    className="w-full flex items-center justify-between p-3.5 bg-coffee-50 hover:bg-gold/10 border border-coffee-100 hover:border-gold/30 rounded-xl transition-all text-sm font-semibold text-coffee-800 group"
+                    onClick={() => updateSize(ct)}
+                  >
+                    <span className="group-hover:text-gold-dark transition-colors">Size {ct.KichCo}</span>
+                    <span className="font-mono text-gold">{Number(ct.Gia).toLocaleString()}đ</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-6 pt-0">
+              <button className="w-full py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowEditSizeModal(false)}>Hủy bỏ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- XÁC NHẬN THANH TOÁN --- */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowCheckoutModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-gold/15 text-gold rounded-full flex items-center justify-center mx-auto text-xl mb-4">📋</div>
+            <h3 className="font-heading text-lg font-bold text-coffee-800 mb-2">Xác nhận đặt đơn hàng</h3>
+            <p className="text-sm text-coffee-600">Bạn sẽ đặt đơn hàng này với tổng chi phí thanh toán là:</p>
+            <p className="font-heading font-extrabold text-gold text-2xl font-mono mt-2 mb-6">{getTotalPrice().toLocaleString()}đ</p>
+            
+            <div className="flex gap-3">
+              <button className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-semibold rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 shadow-md transition-all" onClick={handleCheckout}>Xác nhận đặt</button>
+              <button className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowCheckoutModal(false)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- XÁC NHẬN XÓA MÓN --- */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-danger-light text-danger rounded-full flex items-center justify-center mx-auto text-xl mb-4">🗑️</div>
+            <h3 className="font-heading text-lg font-bold text-coffee-800 mb-2">Xóa món ăn?</h3>
+            <p className="text-sm text-coffee-500 mb-6">Bạn có chắc chắn muốn loại bỏ sản phẩm này ra khỏi giỏ hàng?</p>
+            
+            <div className="flex gap-3">
+              <button className="flex-1 py-2.5 bg-danger text-white font-semibold rounded-xl text-sm hover:bg-danger/90 shadow-md transition-all" onClick={confirmDelete}>Xóa bỏ</button>
+              <button className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowDeleteConfirm(false)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

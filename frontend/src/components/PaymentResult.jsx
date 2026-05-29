@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import DashboardLayout from "./DashboardLayout";
-import "../styles/PaymentResult.css"; 
 
 export default function PaymentResult() {
   const location = useLocation();
@@ -16,14 +15,12 @@ export default function PaymentResult() {
   useEffect(() => {
     const query = location.search;
 
-
     if (!query) {
       setStatus("fail");
       setMessage("Không tìm thấy thông tin giao dịch trả về!");
       return;
     }
 
-  
     api.get(`/paymentVnPay/vnpay-return${query}`)
       .then((res) => {
         if (res.data.status === "success") {
@@ -82,47 +79,55 @@ export default function PaymentResult() {
 
   return (
     <DashboardLayout title="Kết Quả Thanh Toán">
-      <div className="payment-result-wrapper">
-        <div className={`result-card ${status}`}>
-          
+      <div className="flex items-center justify-center p-4 md:p-8 animate-fade-in">
+        <div className="bg-white rounded-3xl border border-coffee-100/50 shadow-xl shadow-coffee-900/5 max-w-md w-full overflow-hidden">
           {/* TRƯỜNG HỢP ĐANG TẢI */}
           {status === "loading" && (
-            <div className="result-content">
-              <div className="spinner-loader"></div>
-              <h2>Đang xử lý...</h2>
-              <p>Vui lòng đợi trong giây lát, không tắt trình duyệt.</p>
+            <div className="p-8 text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 border-4 border-coffee-200 border-t-gold rounded-full animate-spin"></div>
+              </div>
+              <h2 className="font-heading text-xl font-bold text-coffee-800">Đang xử lý giao dịch...</h2>
+              <p className="text-sm text-coffee-400">Vui lòng đợi trong giây lát, không tắt hoặc reload lại trình duyệt.</p>
             </div>
           )}
 
           {/* TRƯỜNG HỢP THÀNH CÔNG */}
           {status === "success" && (
-            <div className="result-content">
-              <div className="icon-circle success-icon">✔</div>
-              <h2 className="text-success">Thanh toán thành công!</h2>
-              <p className="sub-text">Đơn hàng của bạn đã được thanh toán.</p>
+            <div className="p-8 text-center space-y-6">
+              <div className="w-16 h-16 bg-success-light text-success rounded-full flex items-center justify-center text-3xl font-bold mx-auto border border-success/10 animate-scale-in">
+                ✔
+              </div>
+              <div className="space-y-1.5">
+                <h2 className="font-heading text-2xl font-extrabold text-success">Thanh toán thành công!</h2>
+                <p className="text-xs text-coffee-400 font-medium">Đơn hàng của bạn đã hoàn tất quy trình giao dịch.</p>
+              </div>
 
               {orderInfo && (
-                <div className="bill-info">
-                  <div className="bill-row">
-                    <span>Mã đơn hàng:</span>
-                    <strong>#{orderInfo.orderId}</strong>
+                <div className="bg-coffee-50/50 border border-coffee-100/50 rounded-2xl p-4 text-sm text-left space-y-3.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-coffee-400 font-semibold uppercase tracking-wider">Mã đơn hàng</span>
+                    <strong className="text-coffee-800 font-bold">#{orderInfo.orderId}</strong>
                   </div>
-                  <div className="bill-row">
-                    <span>Số tiền:</span>
-                    <strong className="highlight-money">{formatMoney(orderInfo.amount)}</strong>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-coffee-400 font-semibold uppercase tracking-wider">Số tiền</span>
+                    <strong className="text-gold font-extrabold text-base">{formatMoney(orderInfo.amount)}</strong>
                   </div>
-                  <div className="bill-row">
-                    <span>Ngân hàng:</span>
-                    <span>{orderInfo.bankCode}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-coffee-400 font-semibold uppercase tracking-wider">Ngân hàng</span>
+                    <span className="text-coffee-700 font-bold uppercase">{orderInfo.bankCode}</span>
                   </div>
-                  <div className="bill-row">
-                    <span>Thời gian:</span>
-                    <span>{formatDate(orderInfo.date)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-coffee-400 font-semibold uppercase tracking-wider">Thời gian</span>
+                    <span className="text-coffee-600 font-medium font-mono">{formatDate(orderInfo.date)}</span>
                   </div>
                 </div>
               )}
 
-              <button className="btn-action btn-success" onClick={handleBack}>
+              <button 
+                className="w-full py-3.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-semibold rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 shadow-md shadow-coffee-700/10 transition-all" 
+                onClick={handleBack}
+              >
                 Quay lại danh sách đơn hàng
               </button>
             </div>
@@ -130,19 +135,23 @@ export default function PaymentResult() {
 
           {/* TRƯỜNG HỢP THẤT BẠI */}
           {status === "fail" && (
-            <div className="result-content">
-              <div className="icon-circle fail-icon">✖</div>
-              <h2 className="text-fail">Thanh toán thất bại!</h2>
-              <p className="error-msg">{message}</p>
-              
-              <div className="fail-actions">
-                <button className="btn-action btn-secondary" onClick={handleBack}>
-                  Quay lại trang chủ
-                </button>
+            <div className="p-8 text-center space-y-6">
+              <div className="w-16 h-16 bg-danger-light text-danger rounded-full flex items-center justify-center text-3xl font-bold mx-auto border border-danger/10 animate-scale-in">
+                ✖
               </div>
+              <div className="space-y-1.5">
+                <h2 className="font-heading text-2xl font-extrabold text-danger">Thanh toán thất bại!</h2>
+                <p className="text-sm text-coffee-400 px-2">{message}</p>
+              </div>
+              
+              <button 
+                className="w-full py-3.5 bg-coffee-100 hover:bg-coffee-200 text-coffee-700 font-semibold rounded-xl text-sm transition-all" 
+                onClick={handleBack}
+              >
+                Quay lại quản lý đơn hàng
+              </button>
             </div>
           )}
-
         </div>
       </div>
     </DashboardLayout>

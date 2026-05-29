@@ -4,8 +4,6 @@ import { QRCodeCanvas } from "qrcode.react";
 import api from "../services/api";
 import DashboardLayout from "./DashboardLayout";
 
-import "../styles/CheckoutOrder.css";
-
 export default function CheckoutOrder() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -127,78 +125,117 @@ export default function CheckoutOrder() {
 
     return (
         <DashboardLayout title="Thanh Toán Đơn Hàng">
-            <div className="checkout-container">
-                {/* CỘT TRÁI */}
-                <div className="order-summary-box">
-                    <h3>Chi tiết đơn hàng</h3>
-                    {cart.map((item, idx) => (
-                        <div key={idx} className="item-line">
-                            <span>{item.TenMon} ({item.KichCo}) x{item.SoLuong}</span>
-                            <span>{(item.Gia * item.SoLuong).toLocaleString()}đ</span>
-                        </div>
-                    ))}
-                    <hr />
-                    <h2 className="total-txt">Tổng tiền: {formatVND(total)/2}</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start animate-fade-in">
+                {/* CỘT TRÁI: CHI TIẾT ĐƠN HÀNG */}
+                <div className="bg-white rounded-2xl border border-coffee-100/50 p-6 shadow-sm space-y-4">
+                    <h3 className="font-heading text-lg font-bold text-coffee-800 border-b border-coffee-50 pb-3 flex items-center gap-2">
+                        📋 Chi tiết đơn hàng
+                    </h3>
+                    <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
+                        {cart.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm py-1.5 border-b border-coffee-50/30">
+                                <div className="space-y-0.5">
+                                    <span className="font-semibold text-coffee-800 block">{item.TenMon}</span>
+                                    <span className="inline-flex items-center px-2 py-0.5 bg-coffee-100 text-coffee-600 text-[10px] font-bold rounded-full">
+                                        Size {item.KichCo} x {item.SoLuong}
+                                    </span>
+                                </div>
+                                <span className="font-bold text-coffee-700 font-mono">{formatVND(item.Gia * item.SoLuong)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-coffee-100/50">
+                        <span className="text-sm text-coffee-500 font-medium">Tổng số tiền cần thanh toán</span>
+                        <span className="font-heading text-xl font-extrabold text-gold font-mono">{formatVND(total)}</span>
+                    </div>
                 </div>
 
-                {/* CỘT PHẢI */}
-                <div className="customer-form">
-                    <h3>Thông tin khách hàng</h3>
-                    <input
-                        type="text"
-                        placeholder="Tên khách hàng"
-                        value={customerInfo.HoTen}
-                        onChange={e => setCustomerInfo({ ...customerInfo, HoTen: e.target.value })}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Số điện thoại (Bắt buộc)"
-                        value={customerInfo.SDT}
-                        onChange={e => setCustomerInfo({ ...customerInfo, SDT: e.target.value })}
-                    />
+                {/* CỘT PHẢI: THÔNG TIN KHÁCH HÀNG */}
+                <div className="bg-white rounded-2xl border border-coffee-100/50 p-6 shadow-sm space-y-5">
+                    <h3 className="font-heading text-lg font-bold text-coffee-800 border-b border-coffee-50 pb-3">
+                        👤 Thông tin giao dịch
+                    </h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Tên khách hàng</label>
+                            <input
+                                type="text"
+                                placeholder="Tên khách hàng..."
+                                value={customerInfo.HoTen}
+                                onChange={e => setCustomerInfo({ ...customerInfo, HoTen: e.target.value })}
+                                className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all font-semibold"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Số điện thoại *</label>
+                            <input
+                                type="text"
+                                placeholder="Nhập SĐT khách hàng..."
+                                value={customerInfo.SDT}
+                                onChange={e => setCustomerInfo({ ...customerInfo, SDT: e.target.value })}
+                                className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all font-mono font-semibold"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">💳 Hình thức thanh toán</label>
+                            <select
+                                value={customerInfo.PhuongThucThanhToan}
+                                onChange={e => setCustomerInfo({ ...customerInfo, PhuongThucThanhToan: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-700 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold/30 transition-all font-semibold"
+                            >
+                                <option value="Tiền mặt">💵 Tiền mặt (Thanh toán sau)</option>
+                                <option value="Chuyển khoản">💳 Chuyển khoản ngân hàng</option>
+                                <option value="Ví điện tử">📱 Ví điện tử (VNPay)</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <h3>💳Hình thức thanh toán</h3>
-                    <select
-                        value={customerInfo.PhuongThucThanhToan}
-                        onChange={e => setCustomerInfo({ ...customerInfo, PhuongThucThanhToan: e.target.value })}
+                    <button 
+                        className="w-full py-3.5 bg-gradient-to-r from-coffee-700 to-coffee-600 hover:from-coffee-600 hover:to-coffee-500 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-coffee-700/10 active:scale-98 mt-2"
+                        onClick={handleFinalConfirm}
                     >
-                        <option value="Tiền mặt">Tiền mặt</option>
-                        <option value="Chuyển khoản">Chuyển khoản</option>
-                        <option value="Ví điện tử">Ví điện tử (VNPay)</option>
-                    </select>
-
-                    <button className="btn-confirm-final" onClick={handleFinalConfirm}>
                         {customerInfo.PhuongThucThanhToan === "Ví điện tử" 
-                            ? "TẠO QR THANH TOÁN" 
-                            : "XÁC NHẬN & HOÀN TẤT"}
+                            ? "✨ TẠO MÃ QR THANH TOÁN (VNPAY)" 
+                            : "🚀 HOÀN TẤT & XUẤT HÓA ĐƠN"}
                     </button>
                 </div>
             </div>
 
             {/* MODAL QR */}
             {showQRModal && (
-                <div className="invoice-modal-overlay">
-                    <div className="invoice-modal-content qr-modal">
-                        <div className="invoice-header-title"><h2>Quét mã thanh toán</h2></div>
-                        <div className="qr-content">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowQRModal(false)}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-coffee-50">
+                            <h3 className="font-heading text-lg font-bold text-coffee-800">Quét mã thanh toán VNPay</h3>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors" onClick={() => setShowQRModal(false)}>✕</button>
+                        </div>
+                        
+                        <div className="p-6 text-center space-y-4">
                             {paymentUrl ? (
                                 <>
-                                    <p className="qr-instruction">Quét mã bằng ứng dụng ngân hàng hoặc ví VNPAY</p>
-                                    <div className="qr-wrapper">
-                                        <QRCodeCanvas value={paymentUrl} size={220} level={"H"} includeMargin={true} />
+                                    <p className="text-xs text-coffee-400 font-medium">Mở ứng dụng ngân hàng hoặc ví VNPAY để quét mã bên dưới</p>
+                                    <div className="inline-block p-4 bg-white border border-coffee-100 rounded-2xl shadow-sm">
+                                        <QRCodeCanvas value={paymentUrl} size={200} level={"H"} includeMargin={false} />
                                     </div>
-                                    <p className="qr-amount">Số tiền: {formatVND(total)}</p>
-                                    <div className="admin-test-section">
-                                        <a href={paymentUrl} className="btn-test-payment" target="_blank" rel="noreferrer">
-                                            Click để nhập thẻ Test
+                                    <p className="font-heading text-lg font-extrabold text-gold font-mono">{formatVND(total)}</p>
+                                    <div className="pt-2">
+                                        <a href={paymentUrl} className="inline-block text-xs font-semibold text-info bg-info-light hover:bg-info/10 px-4 py-2 rounded-lg transition-colors" target="_blank" rel="noreferrer">
+                                            💳 Thử nghiệm thanh toán (VNPAY Sandbox)
                                         </a>
                                     </div>
                                 </>
-                            ) : <p>Đang tạo mã...</p>}
+                            ) : (
+                                <div className="py-12 flex flex-col items-center justify-center">
+                                    <div className="w-10 h-10 border-4 border-coffee-200 border-t-gold rounded-full animate-spin"></div>
+                                    <p className="text-xs text-coffee-400 mt-3 font-semibold">Đang sinh mã giao dịch...</p>
+                                </div>
+                            )}
                         </div>
-                        <div className="invoice-actions-buttons">
-                            <button onClick={handlePaymentSuccess} className="btn-confirm-print-invoice">Khách đã thanh toán</button>
-                            <button onClick={() => setShowQRModal(false)} className="btn-cancel-print-invoice">Đóng</button>
+
+                        <div className="flex gap-3 p-6 bg-coffee-50 border-t border-coffee-50">
+                            <button onClick={handlePaymentSuccess} className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10">Khách đã trả xong</button>
+                            <button onClick={() => setShowQRModal(false)} className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors">Đóng</button>
                         </div>
                     </div>
                 </div>
@@ -206,45 +243,76 @@ export default function CheckoutOrder() {
 
             {/* MODAL HÓA ĐƠN */}
             {showInvoiceModal && (
-                <div className="invoice-modal-overlay">
-                    <div className="invoice-modal-content">
-                        <div className="invoice-header-title"><h2>Xem trước hóa đơn</h2></div>
-                        <div className="invoice-preview" id="invoice-print-area">
-                            <div className="invoice-company-info">
-                                <h2>P-COFFEE SHOP</h2>
-                                <p>Địa chỉ: 180 Cao Lỗ, Quận 8, TP.HCM</p>
-                                <p>Hotline: 0123 456 789</p>
-                                <hr className="divider" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={handleSkipPrint}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-coffee-50 bg-coffee-50/50">
+                            <h3 className="font-heading text-lg font-bold text-coffee-800">Xác nhận bán hàng thành công</h3>
+                            <button onClick={handleSkipPrint} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-100 text-coffee-400 hover:text-coffee-700 transition-colors">✕</button>
+                        </div>
+
+                        {/* Invoice Preview */}
+                        <div className="p-6 bg-cream border-b border-dashed border-coffee-200" id="invoice-print-area">
+                            <div className="text-center space-y-1.5 pb-4 border-b border-coffee-200/50">
+                                <h2 className="font-heading text-2xl font-bold text-coffee-800 tracking-wider">P-COFFEE SHOP</h2>
+                                <p className="text-xs text-coffee-500 font-medium">Địa chỉ: 180 Cao Lỗ, Quận 8, TP.HCM</p>
+                                <p className="text-xs text-coffee-400 font-medium">Hotline: 0123 456 789</p>
                             </div>
-                            <div className="invoice-title-section">
-                                <h2>HÓA ĐƠN BÁN HÀNG</h2>
-                                <p>Số: #{createdOrderId}</p>
-                                <p>Ngày: {new Date().toLocaleString('vi-VN')}</p>
-                                <p>Trạng thái: <strong>ĐÃ THANH TOÁN</strong></p>
+                            
+                            <div className="py-4 text-center space-y-1 text-xs text-coffee-600 border-b border-coffee-200/50">
+                                <h3 className="font-heading text-base font-bold text-coffee-800 mb-2">HÓA ĐƠN BÁN HÀNG</h3>
+                                <div className="flex justify-between"><span className="text-coffee-400">Số đơn:</span><span className="font-semibold text-coffee-800">#{createdOrderId}</span></div>
+                                <div className="flex justify-between"><span className="text-coffee-400">Thời gian:</span><span className="font-semibold text-coffee-800">{new Date().toLocaleString('vi-VN')}</span></div>
+                                <div className="flex justify-between"><span className="text-coffee-400">Trạng thái:</span><span className="font-bold text-success">ĐÃ THANH TOÁN</span></div>
                             </div>
-                            <div className="invoice-customer-info">
-                                <p><strong>Khách hàng:</strong> {customerInfo.HoTen}</p>
-                                <p><strong>SĐT:</strong> {customerInfo.SDT}</p>
-                                <p><strong>Thanh toán:</strong> {customerInfo.PhuongThucThanhToan}</p>
+                            
+                            <div className="bg-white/50 border border-coffee-100/50 rounded-xl p-3 space-y-1.5 text-xs text-coffee-700 my-4">
+                                <div className="flex justify-between">
+                                    <span className="text-coffee-400">Khách hàng:</span>
+                                    <span className="font-semibold text-coffee-800">{customerInfo.HoTen}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-coffee-400">SĐT khách:</span>
+                                    <span className="font-semibold text-coffee-800 font-mono">{customerInfo.SDT}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-coffee-400">Hình thức:</span>
+                                    <span className="font-semibold text-coffee-800">{customerInfo.PhuongThucThanhToan}</span>
+                                </div>
                             </div>
-                            <table className="invoice-items-table">
-                                <thead><tr><th>Món</th><th>SL</th><th>Thành tiền</th></tr></thead>
-                                <tbody>
+
+                            <table className="w-full text-xs text-coffee-700">
+                                <thead>
+                                    <tr className="border-b border-coffee-200/50 pb-2 text-coffee-400">
+                                        <th className="text-left font-semibold pb-1.5">Món</th>
+                                        <th className="text-center font-semibold pb-1.5 w-12">SL</th>
+                                        <th className="text-right font-semibold pb-1.5">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-coffee-100/50">
                                     {cart.map((item, index) => (
                                         <tr key={index}>
-                                            <td>{item.TenMon} ({item.KichCo})</td>
-                                            <td>{item.SoLuong}</td>
-                                            <td>{formatVND(item.Gia * item.SoLuong)}</td>
+                                            <td className="py-2 text-coffee-800 font-medium">{item.TenMon} <span className="text-[10px] text-coffee-400">({item.KichCo})</span></td>
+                                            <td className="py-2 text-center text-coffee-600 font-semibold">{item.SoLuong}</td>
+                                            <td className="py-2 text-right font-bold text-coffee-800 font-mono">{formatVND(item.Gia * item.SoLuong)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
-                                <tfoot><tr><td colSpan="2"><strong>TỔNG CỘNG:</strong></td><td><strong>{formatVND(total)}</strong></td></tr></tfoot>
+                                <tfoot>
+                                    <tr className="border-t border-dashed border-coffee-200/50 pt-2 text-sm">
+                                        <td colSpan="2" className="py-3 text-left font-bold text-coffee-700 uppercase tracking-wider">TỔNG CỘNG:</td>
+                                        <td className="py-3 text-right font-heading text-base font-extrabold text-gold">{formatVND(total)}</td>
+                                    </tr>
+                                </tfoot>
                             </table>
-                            <div className="invoice-footer-note"><p>Cảm ơn quý khách! Hẹn gặp lại!</p></div>
+                            
+                            <div className="text-center pt-6 text-[10px] text-coffee-400 tracking-wider">
+                                <p>Cảm ơn quý khách! Hẹn gặp lại bạn!</p>
+                            </div>
                         </div>
-                        <div className="invoice-actions-buttons">
-                            <button onClick={confirmPrintInvoice} className="btn-confirm-print-invoice">In ngay</button>
-                            <button onClick={handleSkipPrint} className="btn-cancel-print-invoice">Bỏ qua (Về danh sách)</button>
+
+                        <div className="flex gap-3 p-6 bg-coffee-50 border-t border-coffee-50">
+                            <button onClick={confirmPrintInvoice} className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10">In ngay</button>
+                            <button onClick={handleSkipPrint} className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors">Bỏ qua (Về danh sách)</button>
                         </div>
                     </div>
                 </div>

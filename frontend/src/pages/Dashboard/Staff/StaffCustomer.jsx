@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
-import "../../../styles/Dashboard/Staff/Staff_Customers.css";
 
 export default function StaffCustomers() {
   const [customers, setCustomers] = useState([]);
@@ -102,166 +101,195 @@ export default function StaffCustomers() {
 
   return (
     <DashboardLayout title="Quản lý Khách Hàng">
-      <div className="customers-container">
-        <div className="customers-header">
-            <div className="header-left">
-                <h2>Danh Sách Khách Hàng</h2>
+      <div className="bg-white rounded-2xl border border-coffee-100/50 shadow-sm overflow-hidden animate-fade-in">
+        {/* Header Controls */}
+        <div className="p-5 border-b border-coffee-50 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-coffee-300">🔍</span>
+              <input 
+                type="text" 
+                placeholder="Tìm kiếm theo tên hoặc SĐT..." 
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+              />
             </div>
-            
-            <div className="search-box">
-                <input 
-                    type="text" 
-                    placeholder="🔍 Tìm tên hoặc SĐT..." 
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-            </div>
-            <button className="btn-add-cust" onClick={handleAddClick}>
-                    Thêm khách hàng
-                </button>
+            <button 
+              className="px-5 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium text-sm rounded-xl hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10 flex items-center justify-center gap-1.5 self-end sm:self-auto"
+              onClick={handleAddClick}
+            >
+              <span>+ Thêm khách hàng</span>
+            </button>
+          </div>
         </div>
 
-        <table className="cust-table">
+        {/* Table View */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
             <thead>
-                <tr>
-                    <th>Mã KH</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>SĐT</th>
-                    <th>Địa chỉ</th>
-                    <th>Thao tác</th>
-                </tr>
+              <tr className="bg-coffee-50/50">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">Mã KH</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">Họ tên</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">Email</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">SĐT</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">Địa chỉ</th>
+                <th className="text-center px-5 py-3 text-xs font-semibold text-coffee-500 uppercase tracking-wider">Thao tác</th>
+              </tr>
             </thead>
-            <tbody>
-                {filteredCustomers.map(cust => (
-                    <tr key={cust.MaND}>
-                        <td>#{cust.MaND}</td>
-                        <td>{cust.HoTen}</td>
-                        <td>{cust.Email}</td>
-                        <td>{cust.SDT || "---"}</td>
-                        <td>{cust.DiaChi || "---"}</td>
-                        <td>
-                            <button className="btn-edit-cust" onClick={() => handleEditClick(cust)}>
-                                Sửa
-                            </button>
-                        </td>
-                    </tr>
-                ))}
+            <tbody className="divide-y divide-coffee-50">
+              {filteredCustomers.map(cust => (
+                <tr key={cust.MaND} className="hover:bg-coffee-50/30 transition-colors">
+                  <td className="px-5 py-3.5 text-sm font-semibold text-coffee-400">#{cust.MaND}</td>
+                  <td className="px-5 py-3.5 text-sm font-semibold text-coffee-800">{cust.HoTen}</td>
+                  <td className="px-5 py-3.5 text-sm text-coffee-600">{cust.Email}</td>
+                  <td className="px-5 py-3.5 text-sm text-coffee-500 font-mono">{cust.SDT || "—"}</td>
+                  <td className="px-5 py-3.5 text-sm text-coffee-400 max-w-[200px] truncate" title={cust.DiaChi}>{cust.DiaChi || "—"}</td>
+                  <td className="px-5 py-3.5 text-center">
+                    <button 
+                      className="px-3.5 py-1.5 text-xs font-semibold text-info bg-info-light rounded-lg hover:bg-info/10 transition-colors"
+                      onClick={() => handleEditClick(cust)}
+                    >
+                      Sửa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredCustomers.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-5 py-12 text-center text-coffee-300">
+                    Không tìm thấy khách hàng nào hợp lệ
+                  </td>
+                </tr>
+              )}
             </tbody>
-        </table>
-
-        {/* --- MODAL SỬA THÔNG TIN --- */}
-        {showEditModal && (
-            <div className="modal-overlay">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h3>Cập nhật thông tin</h3>
-                        <button className="btn-close-modal" onClick={() => setShowEditModal(false)}>✕</button>
-                    </div>
-                    <div className="modal-body">
-                        <div className="form-group">
-                            <label>Email (Không thể sửa)</label>
-                            <input type="text" value={editingCustomer.Email} disabled className="input-disabled" />
-                        </div>
-                        <div className="form-group">
-                            <label>Họ tên</label>
-                            <input 
-                                type="text" 
-                                value={formData.HoTen}
-                                onChange={e => setFormData({...formData, HoTen: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Số điện thoại</label>
-                            <input 
-                                type="text" 
-                                value={formData.SDT}
-                                onChange={e => setFormData({...formData, SDT: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Địa chỉ</label>
-                            <input 
-                                type="text" 
-                                value={formData.DiaChi}
-                                onChange={e => setFormData({...formData, DiaChi: e.target.value})}
-                            />
-                        </div>
-                        <p style={{color: '#e74c3c', fontSize: '13px', marginTop: '10px', fontStyle: 'italic'}}>
-                            * Nhân viên không có quyền thay đổi mật khẩu khách hàng.
-                        </p>
-                    </div>
-                    <div className="modal-footer">
-                        <button className="btn-save" onClick={handleSave}>Lưu thay đổi</button>
-                        <button className="btn-cancel" onClick={() => setShowEditModal(false)}>Hủy</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* --- MODAL THÊM MỚI --- */}
-        {showAddModal && (
-            <div className="modal-overlay">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h3>Thêm khách hàng mới</h3>
-                        <button className="btn-close-modal" onClick={() => setShowAddModal(false)}>✕</button>
-                    </div>
-                    <div className="modal-body">
-                        <div className="form-group">
-                            <label>Họ tên <span style={{color:'red'}}>*</span></label>
-                            <input 
-                                type="text" 
-                                placeholder="Nhập họ tên..."
-                                value={newCustomer.HoTen}
-                                onChange={e => setNewCustomer({...newCustomer, HoTen: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Email <span style={{color:'red'}}>*</span></label>
-                            <input 
-                                type="email" 
-                                placeholder="Nhập email..."
-                                value={newCustomer.Email}
-                                onChange={e => setNewCustomer({...newCustomer, Email: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Mật khẩu <span style={{color:'red'}}>*</span></label>
-                            <input 
-                                type="password" 
-                                placeholder="Nhập mật khẩu..."
-                                value={newCustomer.MatKhau}
-                                onChange={e => setNewCustomer({...newCustomer, MatKhau: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Số điện thoại</label>
-                            <input 
-                                type="text" 
-                                placeholder="Nhập SĐT..."
-                                value={newCustomer.SDT}
-                                onChange={e => setNewCustomer({...newCustomer, SDT: e.target.value})}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label>Địa chỉ</label>
-                            <input 
-                                type="text" 
-                                placeholder="Nhập địa chỉ..."
-                                value={newCustomer.DiaChi}
-                                onChange={e => setNewCustomer({...newCustomer, DiaChi: e.target.value})}
-                            />
-                        </div>
-                    </div>
-                    <div className="modal-footer">
-                        <button className="btn-save" onClick={handleCreate}>Tạo tài khoản</button>
-                        <button className="btn-cancel" onClick={() => setShowAddModal(false)}>Hủy</button>
-                    </div>
-                </div>
-            </div>
-        )}
+          </table>
+        </div>
       </div>
+
+      {/* --- MODAL SỬA THÔNG TIN --- */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowEditModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-coffee-50">
+              <h3 className="font-heading text-lg font-bold text-coffee-800">Cập nhật thông tin</h3>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors" onClick={() => setShowEditModal(false)}>✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-coffee-400 uppercase tracking-wider mb-1.5">Email (Không thể sửa)</label>
+                <input type="text" value={editingCustomer.Email} disabled className="w-full px-4 py-2.5 rounded-xl bg-coffee-50/50 border border-coffee-100/50 text-coffee-400 text-sm cursor-not-allowed" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Họ tên</label>
+                <input 
+                  type="text" 
+                  value={formData.HoTen}
+                  onChange={e => setFormData({...formData, HoTen: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Số điện thoại</label>
+                <input 
+                  type="text" 
+                  value={formData.SDT}
+                  onChange={e => setFormData({...formData, SDT: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Địa chỉ</label>
+                <input 
+                  type="text" 
+                  value={formData.DiaChi}
+                  onChange={e => setFormData({...formData, DiaChi: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-danger bg-danger-light/50 px-3 py-2 rounded-lg font-medium italic">
+                * Nhân viên không có quyền thay đổi mật khẩu khách hàng.
+              </p>
+            </div>
+
+            <div className="flex gap-3 p-6 bg-coffee-50/50 border-t border-coffee-50">
+              <button className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10" onClick={handleSave}>Lưu thay đổi</button>
+              <button className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowEditModal(false)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL THÊM MỚI --- */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowAddModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-coffee-50">
+              <h3 className="font-heading text-lg font-bold text-coffee-800">Thêm khách hàng mới</h3>
+              <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors" onClick={() => setShowAddModal(false)}>✕</button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Họ tên <span className="text-danger">*</span></label>
+                <input 
+                  type="text" 
+                  placeholder="Nhập họ tên..."
+                  value={newCustomer.HoTen}
+                  onChange={e => setNewCustomer({...newCustomer, HoTen: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Email <span className="text-danger">*</span></label>
+                <input 
+                  type="email" 
+                  placeholder="Nhập email..."
+                  value={newCustomer.Email}
+                  onChange={e => setNewCustomer({...newCustomer, Email: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Mật khẩu <span className="text-danger">*</span></label>
+                <input 
+                  type="password" 
+                  placeholder="Nhập mật khẩu..."
+                  value={newCustomer.MatKhau}
+                  onChange={e => setNewCustomer({...newCustomer, MatKhau: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Số điện thoại</label>
+                <input 
+                  type="text" 
+                  placeholder="Nhập SĐT..."
+                  value={newCustomer.SDT}
+                  onChange={e => setNewCustomer({...newCustomer, SDT: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-coffee-500 uppercase tracking-wider mb-1.5">Địa chỉ</label>
+                <input 
+                  type="text" 
+                  placeholder="Nhập địa chỉ..."
+                  value={newCustomer.DiaChi}
+                  onChange={e => setNewCustomer({...newCustomer, DiaChi: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 p-6 bg-coffee-50/50 border-t border-coffee-50">
+              <button className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10" onClick={handleCreate}>Tạo tài khoản</button>
+              <button className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors" onClick={() => setShowAddModal(false)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
