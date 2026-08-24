@@ -12,8 +12,12 @@ import {
   Phone,
   ArrowRight,
   Plus,
+  Minus,
   Flame,
-  Award
+  Award,
+  X,
+  Check,
+  Sparkles
 } from "lucide-react";
 import api from "../services/api";
 import { ToastProvider, useToast } from "../components/ui/Toast";
@@ -34,6 +38,11 @@ function HomeContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+
+  // Quick View / Size Selection Modal State
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+  const [modalSelectedSize, setModalSelectedSize] = useState(null);
+  const [modalQuantity, setModalQuantity] = useState(1);
 
   useEffect(() => {
     loadData();
@@ -74,7 +83,7 @@ function HomeContent() {
         (monsRes.data || []).map(async (mon) => {
           try {
             const detailRes = await api.get(`/chitietmon/mon/${mon.MaMon}`);
-            return { ...mon, chiTiet: detailRes.data };
+            return { ...mon, chiTiet: detailRes.data || [] };
           } catch {
             return { ...mon, chiTiet: [] };
           }
@@ -86,64 +95,95 @@ function HomeContent() {
       setError(null);
     } catch (err) {
       console.error(err);
-      setError("Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại backend!");
+      setError("Không thể kết nối đến máy chủ backend. Vui lòng kiểm tra lại server!");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddToCart = (mon, e) => {
-    e?.stopPropagation();
+  const openProductModal = (mon) => {
+    setSelectedProductForModal(mon);
+    setModalQuantity(1);
+    if (mon.chiTiet && mon.chiTiet.length > 0) {
+      setModalSelectedSize(mon.chiTiet[0]);
+    } else {
+      setModalSelectedSize(null);
+    }
+  };
+
+  const handleModalAddToCart = () => {
     if (!user) {
       toast.warning("Vui lòng đăng nhập để thêm món vào giỏ hàng!");
-      setTimeout(() => navigate("/login"), 1200);
-      return; 
+      setTimeout(() => navigate("/login"), 1000);
+      return;
+    }
+
+    if (!selectedProductForModal || !modalSelectedSize) {
+      toast.error("Vui lòng chọn kích cỡ món!");
+      return;
     }
 
     const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
-    const sizeToAdd = mon.chiTiet?.[0]?.KichCo || "Nhỏ";
-    const priceToAdd = mon.chiTiet?.[0]?.Gia || 0;
+    const sizeToAdd = modalSelectedSize.KichCo;
+    const priceToAdd = modalSelectedSize.Gia;
 
     const existingItemIndex = cartItems.findIndex(
-      (item) => item.MaMon === mon.MaMon && item.KichCo === sizeToAdd
+      (item) => item.MaMon === selectedProductForModal.MaMon && item.KichCo === sizeToAdd
     );
 
     if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].SoLuong += 1;
+      cartItems[existingItemIndex].SoLuong += modalQuantity;
     } else {
       const itemToAdd = {
-        MaMon: mon.MaMon,
-        MaCTM: mon.chiTiet?.[0]?.MaCTM,
-        TenMon: mon.TenMon,
-        HinhAnh: mon.HinhAnh,
+        MaMon: selectedProductForModal.MaMon,
+        MaCTM: modalSelectedSize.MaCTM,
+        TenMon: selectedProductForModal.TenMon,
+        HinhAnh: selectedProductForModal.HinhAnh,
         Gia: priceToAdd,
         KichCo: sizeToAdd,
-        SoLuong: 1 
+        SoLuong: modalQuantity
       };
       cartItems.push(itemToAdd);
     }
 
     localStorage.setItem("cart", JSON.stringify(cartItems));
     updateCartBadge();
-    toast.success(`Đã thêm "${mon.TenMon} (${sizeToAdd})" vào giỏ hàng!`);
+    toast.success(`Đã thêm ${modalQuantity}x "${selectedProductForModal.TenMon} (${sizeToAdd})" vào giỏ hàng!`);
+    setSelectedProductForModal(null);
   };
 
-  const filteredMons = mons.filter(mon => {
+  const getProductImage = (hinhAnh) => {
+    if (!hinhAnh) {
+      return "https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=800&auto=format&fit=crop";
+    }
+    if (hinhAnh.startsWith("http")) return hinhAnh;
+    return `${API_URL}${hinhAnh.startsWith("/") ? "" : "/"}${hinhAnh}`;
+  };
+
+  const formatPrice = (amount) => {
+    return Number(amount || 0).toLocaleString("vi-VN") + " đ";
+  };
+
+  const filteredMons = mons.filter((mon) => {
     const matchSearch = mon.TenMon.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCategory = !selectedCategory || mon.MaLM === parseInt(selectedCategory);
     return matchSearch && matchCategory;
   });
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2C1810] flex flex-col font-sans selection:bg-[#C5963A] selection:text-white">
+    <div className="min-h-screen bg-[#FAF7F5] text-[#2C1810] flex flex-col font-sans selection:bg-[#C5963A] selection:text-white">
       
-      {/* 🌟 ULTRA MODERN FULL-WIDTH HEADER */}
+      {/* 🌟 HEADER FULL-WIDTH CỐ ĐỊNH SANG TRỌNG */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#1A0F0A]/95 backdrop-blur-md border-b border-white/10 text-white transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           
           {/* Brand Logo */}
           <div 
-            onClick={() => navigate("/")} 
+            onClick={() => {
+              setSelectedCategory("");
+              setSearchTerm("");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }} 
             className="flex items-center gap-3.5 cursor-pointer group"
           >
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#C5963A] to-[#D4A84B] flex items-center justify-center text-[#1A0F0A] shadow-lg group-hover:scale-105 transition-transform duration-300">
@@ -153,12 +193,11 @@ function HomeContent() {
               <span className="font-serif text-2xl font-black tracking-tight text-white block leading-none">
                 P-COFFEE
               </span>
-              
             </div>
           </div>
 
           {/* Nav Links */}
-          <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-[#D7CCC8]">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#D7CCC8]">
             <a href="#menu" className="hover:text-[#C5963A] transition-colors">Menu Đặc Sắc</a>
             <a href="#about" className="hover:text-[#C5963A] transition-colors">Về P-Coffee</a>
             <a href="#contact" className="hover:text-[#C5963A] transition-colors">Liên Hệ</a>
@@ -175,7 +214,7 @@ function HomeContent() {
                 >
                   <ShoppingBag className="w-5 h-5 text-[#C5963A]" />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 bg-[#C5963A] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-md">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 bg-[#C5963A] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-md animate-scale-in">
                       {cartCount}
                     </span>
                   )}
@@ -211,8 +250,8 @@ function HomeContent() {
       </header>
 
       {/* ☕ HERO SECTION */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-28 overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#2C1810] to-[#1E110A] text-white">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-[#1E110A] via-[#2C1810] to-[#1E110A] text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
             {/* Left Content */}
@@ -262,7 +301,7 @@ function HomeContent() {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-[10px] uppercase font-bold tracking-wider text-[#C5963A] block">Best Seller</span>
-                        <h4 className="font-bold text-base">Cà Phê Muối Hoàng Gia</h4>
+                        <h4 className="font-bold text-base text-[#2C1810]">Cà Phê Muối Hoàng Gia</h4>
                       </div>
                       <span className="font-bold text-lg text-[#C5963A]">35.000đ</span>
                     </div>
@@ -276,8 +315,8 @@ function HomeContent() {
       </section>
 
       {/* 🔍 SEARCH & FILTER BAR */}
-      <section id="menu" className="relative -mt-6 z-20 max-w-7xl mx-auto px-6 w-full">
-        <div className="p-4 sm:p-5 bg-white rounded-2xl shadow-[0_12px_40px_rgb(44,24,16,0.06)] border border-[#EFEBE9] flex flex-col md:flex-row gap-3 items-center justify-between">
+      <section id="menu" className="relative -mt-6 z-20 max-w-7xl mx-auto px-4 sm:px-6 w-full">
+        <div className="p-4 sm:p-5 bg-white rounded-3xl shadow-[0_12px_40px_rgb(44,24,16,0.06)] border border-[#EFEBE9] flex flex-col md:flex-row gap-4 items-center justify-between">
           
           {/* Search Input */}
           <div className="relative w-full md:flex-1">
@@ -287,7 +326,7 @@ function HomeContent() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm kiếm cà phê, trà, sinh tố..."
-              className="w-full pl-11 pr-4 py-2.5 bg-[#FAF7F2] border border-[#EFEBE9] rounded-xl text-sm font-medium text-[#2C1810] placeholder-[#A1887F] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/40 focus:border-[#C5963A] transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-[#FAF7F2] border border-[#EFEBE9] rounded-2xl text-sm font-medium text-[#2C1810] placeholder-[#A1887F] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/40 focus:border-[#C5963A] transition-all"
             />
           </div>
 
@@ -296,9 +335,9 @@ function HomeContent() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full md:w-60 px-4 py-2.5 bg-[#FAF7F2] border border-[#EFEBE9] rounded-xl text-sm font-semibold text-[#4E342E] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/40 focus:border-[#C5963A] transition-all cursor-pointer"
+              className="w-full md:w-64 px-4 py-3 bg-[#FAF7F2] border border-[#EFEBE9] rounded-2xl text-sm font-semibold text-[#4E342E] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/40 focus:border-[#C5963A] transition-all cursor-pointer"
             >
-              <option value="">Tất cả danh mục ({mons.length})</option>
+              <option value="">Tất cả danh mục ({mons.length} món)</option>
               {loaiMons.map((cat) => (
                 <option key={cat.MaLM} value={cat.MaLM}>{cat.TenLM}</option>
               ))}
@@ -307,30 +346,34 @@ function HomeContent() {
         </div>
 
         {/* Category Pills Slider */}
-        <div className="flex items-center gap-2 overflow-x-auto py-5 scrollbar-none">
+        <div className="flex items-center gap-2.5 overflow-x-auto py-5 scrollbar-none">
           <button
             onClick={() => setSelectedCategory("")}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
+            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
               !selectedCategory 
-                ? "bg-[#2C1810] text-[#C5963A] shadow-sm" 
+                ? "bg-[#2C1810] text-[#C5963A] shadow-md shadow-[#2C1810]/20" 
                 : "bg-white text-[#6D4C41] border border-[#EFEBE9] hover:bg-[#FAF7F2]"
             }`}
           >
-            TẤT CẢ MÓN
+            TẤT CẢ MÓN ({mons.length})
           </button>
           {loaiMons.map((cat) => {
             const isActive = selectedCategory === cat.MaLM.toString();
+            const count = mons.filter(m => m.MaLM === cat.MaLM).length;
             return (
               <button
                 key={cat.MaLM}
                 onClick={() => setSelectedCategory(cat.MaLM.toString())}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
+                className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                   isActive
-                    ? "bg-[#2C1810] text-[#C5963A] shadow-sm"
+                    ? "bg-[#2C1810] text-[#C5963A] shadow-md shadow-[#2C1810]/20"
                     : "bg-white text-[#6D4C41] border border-[#EFEBE9] hover:bg-[#FAF7F2]"
                 }`}
               >
-                {cat.TenLM.toUpperCase()}
+                <span>{cat.TenLM.toUpperCase()}</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-[#C5963A]/20 text-[#C5963A]' : 'bg-[#FAF7F2] text-[#8D6E63]'}`}>
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -338,17 +381,17 @@ function HomeContent() {
       </section>
 
       {/* 📦 PRODUCTS SHOWCASE */}
-      <section className="max-w-7xl mx-auto px-6 py-6 flex-1 w-full">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div key={n} className="bg-white rounded-2xl p-4 border border-[#EFEBE9] animate-pulse space-y-4">
-                <div className="w-full aspect-[4/3] bg-[#EFEBE9] rounded-xl"></div>
-                <div className="h-4 bg-[#EFEBE9] rounded w-3/4"></div>
-                <div className="h-3 bg-[#FAF7F2] rounded w-1/2"></div>
+              <div key={n} className="bg-white rounded-3xl p-5 border border-[#EFEBE9] animate-pulse space-y-4">
+                <div className="w-full aspect-[4/3] bg-[#EFEBE9] rounded-2xl"></div>
+                <div className="h-5 bg-[#EFEBE9] rounded w-3/4"></div>
+                <div className="h-3.5 bg-[#FAF7F2] rounded w-1/2"></div>
                 <div className="flex justify-between items-center pt-2">
-                  <div className="h-5 bg-[#EFEBE9] rounded w-1/3"></div>
-                  <div className="w-9 h-9 bg-[#EFEBE9] rounded-xl"></div>
+                  <div className="h-6 bg-[#EFEBE9] rounded w-1/3"></div>
+                  <div className="w-10 h-10 bg-[#EFEBE9] rounded-2xl"></div>
                 </div>
               </div>
             ))}
@@ -360,14 +403,14 @@ function HomeContent() {
             <p className="text-xs text-[#8D6E63] mb-5">Đang kết nối đến {API_URL}/api</p>
             <button 
               onClick={loadData}
-              className="px-5 py-2 bg-[#2C1810] text-white text-xs font-semibold rounded-xl hover:bg-[#4E342E] transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-[#2C1810] text-white text-xs font-bold rounded-2xl hover:bg-[#4E342E] transition-all cursor-pointer"
             >
               Thử tải lại
             </button>
           </div>
         ) : filteredMons.length === 0 ? (
-          <div className="py-16 text-center bg-white rounded-2xl border border-[#EFEBE9] p-8 my-4">
-            <Coffee className="w-12 h-12 text-[#A1887F] mx-auto mb-3 opacity-50" />
+          <div className="py-20 text-center bg-white rounded-3xl border border-[#EFEBE9] p-8 my-4 shadow-sm">
+            <Coffee className="w-14 h-14 text-[#A1887F] mx-auto mb-3 opacity-40" />
             <h3 className="font-serif font-bold text-xl text-[#2C1810]">Không tìm thấy món nước phù hợp</h3>
             <p className="text-xs text-[#8D6E63] mt-1">Hãy thử tìm với từ khóa khác hoặc chuyển sang danh mục khác.</p>
           </div>
@@ -378,14 +421,13 @@ function HomeContent() {
                 ? Math.min(...mon.chiTiet.map(ct => ct.Gia))
                 : 0;
               
-              const displayImage = mon.HinhAnh 
-                ? (mon.HinhAnh.startsWith("http") ? mon.HinhAnh : `${API_URL}${mon.HinhAnh}`)
-                : "https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=800&auto=format&fit=crop";
+              const displayImage = getProductImage(mon.HinhAnh);
 
               return (
                 <div 
                   key={mon.MaMon} 
-                  className="group bg-white rounded-2xl overflow-hidden border border-[#EFEBE9] shadow-sm hover:shadow-xl hover:shadow-[#2C1810]/6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                  onClick={() => openProductModal(mon)}
+                  className="group bg-white rounded-3xl overflow-hidden border border-[#EFEBE9] shadow-sm hover:shadow-xl hover:shadow-[#2C1810]/8 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between cursor-pointer"
                 >
                   <div>
                     {/* Image Area */}
@@ -398,42 +440,59 @@ function HomeContent() {
                         }}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold text-[#4E342E] shadow-sm">
+                      <span className="absolute top-3 left-3 px-3 py-1 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-bold text-[#4E342E] shadow-sm">
                         {mon.TenLM || "Cà phê"}
                       </span>
                       {mon.chiTiet?.length > 1 && (
-                        <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 bg-[#2C1810]/80 backdrop-blur-md text-white text-[9px] font-bold rounded-full">
+                        <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#1A0F0A]/85 backdrop-blur-md text-white text-[9px] font-bold rounded-full">
                           {mon.chiTiet.length} size
                         </span>
                       )}
                     </div>
 
                     {/* Content */}
-                    <div className="p-4">
+                    <div className="p-5">
                       <h3 className="font-serif text-base font-bold text-[#2C1810] group-hover:text-[#C5963A] transition-colors line-clamp-1">
                         {mon.TenMon}
                       </h3>
                       <p className="text-xs text-[#8D6E63] line-clamp-2 mt-1 leading-relaxed font-light min-h-[32px]">
                         {mon.MoTa || "Hương vị đậm đà thơm ngon đặc trưng của P-Coffee"}
                       </p>
+
+                      {/* Sizes Preview Pills */}
+                      {mon.chiTiet && mon.chiTiet.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-[#FAF7F2]">
+                          {mon.chiTiet.map(ct => (
+                            <span 
+                              key={ct.MaCTM}
+                              className="px-2.5 py-0.5 bg-[#FAF7F2] text-[#6D4C41] border border-[#EFEBE9] rounded-lg text-[10px] font-semibold"
+                            >
+                              Size {ct.KichCo}: {Number(ct.Gia).toLocaleString("vi-VN")}đ
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Price & Action */}
-                  <div className="px-4 pb-4 pt-2 border-t border-[#FAF7F2] flex items-center justify-between">
+                  <div className="px-5 pb-5 pt-1 flex items-center justify-between">
                     <div>
                       <span className="text-[9px] text-[#A1887F] font-bold uppercase tracking-wider block">Giá từ</span>
-                      <span className="font-serif text-base font-bold text-[#C5963A]">
-                        {Number(minPrice).toLocaleString("vi-VN")}đ
+                      <span className="font-serif text-lg font-black text-[#C5963A]">
+                        {formatPrice(minPrice)}
                       </span>
                     </div>
 
                     <button
-                      onClick={(e) => handleAddToCart(mon, e)}
-                      className="w-9 h-9 rounded-xl bg-[#FAF7F2] hover:bg-[#2C1810] text-[#2C1810] hover:text-white border border-[#EFEBE9] flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-sm cursor-pointer"
-                      title="Thêm vào giỏ hàng"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openProductModal(mon);
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-[#2C1810] to-[#4E342E] group-hover:from-[#C5963A] group-hover:to-[#D4A84B] text-white group-hover:text-[#1A0F0A] font-bold text-xs rounded-xl transition-all duration-300 shadow-md flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Chọn Size</span>
                     </button>
                   </div>
                 </div>
@@ -445,7 +504,7 @@ function HomeContent() {
 
       {/* 🌟 ABOUT & BRAND VALUE */}
       <section id="about" className="py-16 bg-white border-t border-[#EFEBE9] mt-12">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
             <span className="text-xs font-bold text-[#C5963A] uppercase tracking-[0.2em] block">Sứ Mệnh Của Chúng Tôi</span>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#2C1810]">
@@ -455,8 +514,8 @@ function HomeContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#EFEBE9]">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
+            <div className="p-6 rounded-3xl bg-[#FAF7F2] border border-[#EFEBE9]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
                 <Flame className="w-6 h-6 text-[#C5963A]" />
               </div>
               <h3 className="font-serif font-bold text-lg text-[#2C1810] mb-2">Rang Xay Mộc 100%</h3>
@@ -465,8 +524,8 @@ function HomeContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#EFEBE9]">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
+            <div className="p-6 rounded-3xl bg-[#FAF7F2] border border-[#EFEBE9]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
                 <Award className="w-6 h-6 text-[#C5963A]" />
               </div>
               <h3 className="font-serif font-bold text-lg text-[#2C1810] mb-2">Công Thức Độc Quyền</h3>
@@ -475,8 +534,8 @@ function HomeContent() {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#EFEBE9]">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
+            <div className="p-6 rounded-3xl bg-[#FAF7F2] border border-[#EFEBE9]">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#2C1810] to-[#4E342E] flex items-center justify-center text-white mb-4 shadow-md">
                 <Clock className="w-6 h-6 text-[#C5963A]" />
               </div>
               <h3 className="font-serif font-bold text-lg text-[#2C1810] mb-2">Phục Vụ Siêu Tốc</h3>
@@ -490,7 +549,7 @@ function HomeContent() {
 
       {/* 📍 CONTACT & FOOTER */}
       <footer id="contact" className="bg-[#1A0F0A] text-white pt-12 pb-8 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-white/10">
             
             {/* Brand column */}
@@ -540,6 +599,134 @@ function HomeContent() {
           </div>
         </div>
       </footer>
+
+      {/* ☕ MODAL CHỌN SIZE & SỐ LƯỢNG MÓN (QUICK BUY MODAL) */}
+      {selectedProductForModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedProductForModal(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-scale-in flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-5 border-b border-[#FAF7F2] flex items-center justify-between bg-[#FAF7F2]/60">
+              <div>
+                <span className="text-[10px] font-bold text-[#C5963A] uppercase tracking-wider block">
+                  {selectedProductForModal.TenLM || "Cà Phê"}
+                </span>
+                <h3 className="font-serif text-xl font-bold text-[#2C1810]">
+                  {selectedProductForModal.TenMon}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setSelectedProductForModal(null)} 
+                className="w-9 h-9 rounded-2xl bg-white hover:bg-[#EFEBE9] text-[#6D4C41] flex items-center justify-center transition-colors cursor-pointer border border-[#EFEBE9]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              
+              {/* Product Preview */}
+              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-[#FAF7F2] border border-[#EFEBE9]">
+                <img 
+                  src={getProductImage(selectedProductForModal.HinhAnh)} 
+                  alt={selectedProductForModal.TenMon} 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+
+              {selectedProductForModal.MoTa && (
+                <p className="text-xs text-[#6D4C41] leading-relaxed bg-[#FAF7F2] p-3.5 rounded-2xl border border-[#EFEBE9]">
+                  {selectedProductForModal.MoTa}
+                </p>
+              )}
+
+              {/* Sizes Selection */}
+              <div>
+                <label className="block text-xs font-bold text-[#2C1810] uppercase tracking-wider mb-2.5">
+                  Chọn kích cỡ (Size) *
+                </label>
+                {selectedProductForModal.chiTiet && selectedProductForModal.chiTiet.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {selectedProductForModal.chiTiet.map((detail) => {
+                      const isSelected = modalSelectedSize?.MaCTM === detail.MaCTM;
+                      return (
+                        <button
+                          key={detail.MaCTM}
+                          type="button"
+                          onClick={() => setModalSelectedSize(detail)}
+                          className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                            isSelected
+                              ? 'border-[#C5963A] bg-[#C5963A]/10 text-[#2C1810] shadow-sm ring-2 ring-[#C5963A]/30'
+                              : 'border-[#EFEBE9] hover:bg-[#FAF7F2] text-[#6D4C41]'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">Size {detail.KichCo}</span>
+                          <span className="font-serif font-black text-sm text-[#C5963A]">
+                            {formatPrice(detail.Gia)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-[#A1887F] italic">Món này chưa có cấu hình kích cỡ.</p>
+                )}
+              </div>
+
+              {/* Quantity Stepper */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#FAF7F2]">
+                <span className="text-xs font-bold text-[#2C1810] uppercase tracking-wider">
+                  Số lượng:
+                </span>
+                <div className="flex items-center bg-[#FAF7F2] border border-[#EFEBE9] rounded-2xl p-1">
+                  <button 
+                    onClick={() => setModalQuantity(Math.max(1, modalQuantity - 1))}
+                    className="w-8 h-8 rounded-xl bg-white hover:bg-[#EFEBE9] flex items-center justify-center text-[#2C1810] transition-colors cursor-pointer"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="w-10 text-center font-serif font-bold text-sm text-[#2C1810]">
+                    {modalQuantity}
+                  </span>
+                  <button 
+                    onClick={() => setModalQuantity(modalQuantity + 1)}
+                    className="w-8 h-8 rounded-xl bg-white hover:bg-[#EFEBE9] flex items-center justify-center text-[#2C1810] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-5 border-t border-[#FAF7F2] bg-[#FAF7F2]/60 flex items-center justify-between gap-4">
+              <div>
+                <span className="text-[10px] text-[#8D6E63] block">Tổng tạm tính</span>
+                <span className="font-serif text-xl font-black text-[#C5963A]">
+                  {formatPrice((modalSelectedSize?.Gia || 0) * modalQuantity)}
+                </span>
+              </div>
+
+              <button
+                onClick={handleModalAddToCart}
+                disabled={!modalSelectedSize}
+                className="flex-1 py-3.5 px-6 bg-gradient-to-r from-[#C5963A] to-[#D4A84B] hover:from-[#B8872D] hover:to-[#C5963A] text-[#1A0F0A] font-bold text-sm rounded-2xl shadow-lg shadow-[#C5963A]/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Thêm Vào Giỏ Hàng</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

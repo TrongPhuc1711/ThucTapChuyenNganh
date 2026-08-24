@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// Ưu tiên sử dụng biến môi trường VITE_API_URL trong .env, nếu không có mới fallback localhost:4000
-const rawBaseURL = import.meta.env.VITE_API_URL || "http://localhost:4000";
-const baseURL = rawBaseURL.endsWith("/api") ? rawBaseURL : `${rawBaseURL}/api`;
+// Khi chạy cục bộ localhost: gọi trực tiếp http://localhost:4000/api
+// Khi deploy production: dùng biến môi trường VITE_API_URL
+const baseURL = import.meta.env.DEV 
+  ? "http://localhost:4000/api" 
+  : ((import.meta.env.VITE_API_URL || "") + "/api");
 
 const api = axios.create({
   baseURL: baseURL,
