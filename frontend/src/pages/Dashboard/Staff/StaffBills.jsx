@@ -11,6 +11,7 @@ import {
 import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function StaffBills() {
   const [bills, setBills] = useState([]);
@@ -21,6 +22,10 @@ export default function StaffBills() {
   const [orderDetails, setOrderDetails] = useState([]);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Phân trang limit 10
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     fetchBills();
@@ -56,6 +61,11 @@ export default function StaffBills() {
     }
   };
 
+  const totalItems = filteredBills.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentBills = filteredBills.slice(indexOfFirstItem, indexOfLastItem);
+
   const handlePrintClick = async (bill) => {
     try {
       const resDetail = await api.get(`/donhang/chitiet/${bill.MaDH}`);
@@ -78,7 +88,7 @@ export default function StaffBills() {
 
   return (
     <DashboardLayout title="Quản Lý Hóa Đơn">
-      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 animate-fade-in">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 font-sans animate-fade-in">
         
         {/* Controls Toolbar */}
         <div className="p-6 border-b border-[#FAF7F2] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -98,14 +108,20 @@ export default function StaffBills() {
                 type="text" 
                 placeholder="Tìm mã HĐ, Đơn hàng, Tên khách..." 
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
               />
             </div>
 
             <select 
               value={filterMethod}
-              onChange={(e) => setFilterMethod(e.target.value)}
+              onChange={(e) => {
+                setFilterMethod(e.target.value);
+                setCurrentPage(1);
+              }}
               className="px-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-semibold text-[#4E342E] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
             >
               <option value="all">Tất cả hình thức</option>
@@ -133,32 +149,32 @@ export default function StaffBills() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã HĐ</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Thời Gian</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Phương Thức</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Thao Tác</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã HĐ</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Thời Gian</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Phương Thức</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Thao Tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                {filteredBills.map((bill) => (
+              <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                {currentBills.map((bill) => (
                   <tr key={bill.MaHD} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#A1887F]">
                       #{bill.MaHD}
                     </td>
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#C5963A]">
                       #{bill.MaDH}
                     </td>
-                    <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
                       {formatDate(bill.NgayLap)}
                     </td>
-                    <td className="px-5 py-4 font-serif font-bold text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#2C1810]">
                       {bill.TenNguoiNhan || "Khách tại quầy"}
                     </td>
-                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-sm text-[#2C1810]">
                       {formatMoney(bill.TongTien)}
                     </td>
                     <td className="px-5 py-4 text-xs text-[#6D4C41]">
@@ -184,12 +200,22 @@ export default function StaffBills() {
             </table>
           </div>
         )}
+
+        {/* Phân trang */}
+        {!loading && totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </div>
 
       {/* Modal In Hóa Đơn */}
       {showInvoiceModal && selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowInvoiceModal(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in flex flex-col font-sans" onClick={(e) => e.stopPropagation()}>
             
             {/* Print Preview Area */}
             <div className="p-8 bg-[#FAF7F2] border-b border-dashed border-[#D7CCC8]" id="invoice-print-area">
@@ -202,7 +228,7 @@ export default function StaffBills() {
               <div className="py-4 space-y-1 text-xs text-[#6D4C41] border-b border-[#D7CCC8]">
                 <h4 className="font-serif text-center text-sm font-bold text-[#2C1810] mb-2 uppercase tracking-wider">HÓA ĐƠN TÀI KHÓA</h4>
                 <div className="flex justify-between"><span className="text-[#A1887F]">Mã đơn:</span><span className="font-bold text-[#2C1810]">#{selectedOrder.MaDH}</span></div>
-                <div className="flex justify-between"><span className="text-[#A1887F]">Thời gian:</span><span className="font-mono text-[#2C1810]">{formatDate(selectedOrder.NgayDat)}</span></div>
+                <div className="flex justify-between"><span className="text-[#A1887F]">Thời gian:</span><span className="text-[#2C1810]">{formatDate(selectedOrder.NgayDat)}</span></div>
                 <div className="flex justify-between"><span className="text-[#A1887F]">Khách hàng:</span><span className="font-bold text-[#2C1810]">{selectedOrder.TenNguoiNhan || selectedOrder.HoTen}</span></div>
                 <div className="flex justify-between"><span className="text-[#A1887F]">Hình thức:</span><span className="font-semibold text-[#2C1810]">{selectedOrder.PhuongThucThanhToan || "Tiền mặt"}</span></div>
               </div>
@@ -219,9 +245,9 @@ export default function StaffBills() {
                   <tbody className="divide-y divide-[#EFEBE9]">
                     {orderDetails.map((item, idx) => (
                       <tr key={idx}>
-                        <td className="py-2.5 font-serif font-bold">{item.TenMon} <span className="text-[10px] font-sans font-normal text-[#8D6E63]">({item.KichCo})</span></td>
+                        <td className="py-2.5 font-bold text-[#2C1810]">{item.TenMon} <span className="text-[10px] text-[#8D6E63]">({item.KichCo})</span></td>
                         <td className="py-2.5 text-center font-bold text-[#4E342E]">{item.SoLuong}</td>
-                        <td className="py-2.5 text-right font-mono font-bold text-[#C5963A]">{formatMoney(item.DonGia * item.SoLuong)}</td>
+                        <td className="py-2.5 text-right font-bold text-[#C5963A]">{formatMoney(item.DonGia * item.SoLuong)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -229,8 +255,8 @@ export default function StaffBills() {
               </div>
 
               <div className="pt-4 border-t border-dashed border-[#D7CCC8] flex justify-between items-center text-sm">
-                <span className="font-serif font-bold text-xs uppercase text-[#4E342E]">Tổng cộng thanh toán:</span>
-                <span className="font-serif font-black text-xl text-[#C5963A]">{formatMoney(selectedOrder.TongTien)}</span>
+                <span className="font-bold text-xs uppercase text-[#4E342E]">Tổng cộng thanh toán:</span>
+                <span className="font-bold text-xl text-[#C5963A]">{formatMoney(selectedOrder.TongTien)}</span>
               </div>
               
               <div className="text-center pt-6 text-[10px] text-[#A1887F] space-y-1">

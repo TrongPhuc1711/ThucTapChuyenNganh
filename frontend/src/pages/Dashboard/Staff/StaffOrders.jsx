@@ -17,6 +17,7 @@ import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import InvoicePrint from "../../../components/InvoicePrint";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function StaffOrders() {
   const navigate = useNavigate();
@@ -28,6 +29,10 @@ export default function StaffOrders() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [search, setSearch] = useState("");
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  // Phân trang 10 mục / trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const statusOptions = [
     { value: "all", label: "Tất cả đơn" },
@@ -69,6 +74,11 @@ export default function StaffOrders() {
     }
   };
 
+  const totalItems = filterOrders.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentOrders = filterOrders.slice(indexOfFirstItem, indexOfLastItem);
+
   const viewOrderDetails = async (order) => {
     try {
       const response = await api.get(`/donhang/chitiet/${order.MaDH}`);
@@ -109,7 +119,7 @@ export default function StaffOrders() {
 
   return (
     <DashboardLayout title="Xử Lý Đơn Hàng">
-      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 animate-fade-in">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 font-sans animate-fade-in">
         
         {/* Controls Toolbar */}
         <div className="p-6 border-b border-[#FAF7F2] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -129,14 +139,20 @@ export default function StaffOrders() {
                 type="text" 
                 placeholder="Tìm mã ĐH, tên khách, SĐT..." 
                 value={search} 
-                onChange={(e) => setSearch(e.target.value)} 
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }} 
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
               />
             </div>
 
             <select 
               value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)} 
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }} 
               className="px-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-semibold text-[#4E342E] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
             >
               {statusOptions.map(opt => (
@@ -171,38 +187,38 @@ export default function StaffOrders() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">SĐT</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Địa Chỉ</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Thời Gian</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Chi Tiết</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">SĐT</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Địa Chỉ</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Thời Gian</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Chi Tiết</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                {filterOrders.map(order => (
+              <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                {currentOrders.map(order => (
                   <tr key={order.MaDH} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#C5963A]">
                       #{order.MaDH}
                     </td>
-                    <td className="px-5 py-4 font-serif font-bold text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#2C1810]">
                       {order.TenNguoiNhan || "Khách tại quầy"}
                     </td>
-                    <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
                       {order.SDTNguoiNhan || "—"}
                     </td>
                     <td className="px-5 py-4 text-xs text-[#8D6E63] max-w-[140px] truncate" title={order.DiaChiGiaoHang}>
                       {order.DiaChiGiaoHang || "Tại quán"}
                     </td>
-                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-sm text-[#2C1810]">
                       {formatMoney(order.TongTien)}
                     </td>
                     <td className="px-5 py-4">
                       <StatusBadge status={order.TrangThai} />
                     </td>
-                    <td className="px-5 py-4 text-xs text-[#6D4C41] font-mono">
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
                       {formatDate(order.NgayDat)}
                     </td>
                     <td className="px-5 py-4 text-center">
@@ -219,12 +235,22 @@ export default function StaffOrders() {
             </table>
           </div>
         )}
+
+        {/* Phân trang */}
+        {!loading && totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </div>
 
       {/* Modal Chi Tiết & Chuyển Trạng Thái */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedOrder(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-scale-in flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-scale-in flex flex-col font-sans" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
             <div className="p-6 border-b border-[#FAF7F2] flex items-center justify-between">
@@ -232,7 +258,7 @@ export default function StaffOrders() {
                 <h3 className="font-serif text-xl font-bold text-[#2C1810]">
                   Xử Lý Đơn Hàng #{selectedOrder.MaDH}
                 </h3>
-                <p className="text-xs text-[#8D6E63] font-mono mt-0.5">
+                <p className="text-xs text-[#8D6E63] font-sans mt-0.5">
                   Đặt lúc: {formatDate(selectedOrder.NgayDat)}
                 </p>
               </div>
@@ -245,7 +271,7 @@ export default function StaffOrders() {
             </div>
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 font-sans">
               
               {/* Customer Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -255,7 +281,7 @@ export default function StaffOrders() {
                 </div>
                 <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
                   <p className="text-[10px] uppercase font-bold text-[#A1887F]">SĐT</p>
-                  <p className="text-xs font-bold text-[#2C1810] mt-0.5 font-mono">{selectedOrder.SDTNguoiNhan || "—"}</p>
+                  <p className="text-xs font-bold text-[#2C1810] mt-0.5">{selectedOrder.SDTNguoiNhan || "—"}</p>
                 </div>
                 <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
                   <p className="text-[10px] uppercase font-bold text-[#A1887F]">Thanh toán</p>
@@ -283,10 +309,10 @@ export default function StaffOrders() {
                         <th className="px-4 py-2.5 text-right">Thành Tiền</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#FAF7F2] text-xs">
+                    <tbody className="divide-y divide-[#FAF7F2] text-xs font-sans">
                       {orderDetails.map((item, index) => (
                         <tr key={index}>
-                          <td className="px-4 py-3 font-serif font-bold text-[#2C1810]">
+                          <td className="px-4 py-3 font-bold text-[#2C1810]">
                             {item.TenMon}
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -297,10 +323,10 @@ export default function StaffOrders() {
                           <td className="px-4 py-3 text-center font-bold text-[#4E342E]">
                             {item.SoLuong}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-[#6D4C41]">
+                          <td className="px-4 py-3 text-right text-[#6D4C41]">
                             {formatMoney(item.DonGia)}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono font-bold text-[#C5963A]">
+                          <td className="px-4 py-3 text-right font-bold text-[#C5963A]">
                             {formatMoney(item.DonGia * item.SoLuong)}
                           </td>
                         </tr>
@@ -308,8 +334,8 @@ export default function StaffOrders() {
                     </tbody>
                     <tfoot>
                       <tr className="bg-[#2C1810] text-white">
-                        <td colSpan="4" className="px-4 py-3 font-serif font-bold text-xs">Tổng tiền đơn:</td>
-                        <td className="px-4 py-3 text-right font-serif font-black text-sm text-[#C5963A]">
+                        <td colSpan="4" className="px-4 py-3 font-bold text-xs">Tổng tiền đơn:</td>
+                        <td className="px-4 py-3 text-right font-bold text-sm text-[#C5963A]">
                           {formatMoney(selectedOrder.TongTien)}
                         </td>
                       </tr>

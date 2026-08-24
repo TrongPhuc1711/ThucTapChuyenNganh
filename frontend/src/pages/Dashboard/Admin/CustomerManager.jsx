@@ -4,6 +4,7 @@ import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function CustomerManager() {
   const [customers, setCustomers] = useState([]); 
@@ -13,6 +14,10 @@ export default function CustomerManager() {
   const [editingMa, setEditingMa] = useState(null); 
   const [message, setMessage] = useState(""); 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Phân trang limit 10
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => { 
     loadCustomers(); 
@@ -42,6 +47,11 @@ export default function CustomerManager() {
       )); 
     }
   }, [searchText, customers]);
+
+  const totalItems = filteredCustomers.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentCustomers = filteredCustomers.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleSubmit = async (e) => { 
     e.preventDefault(); 
@@ -127,7 +137,7 @@ export default function CustomerManager() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start font-sans">
         
         {/* Form Column */}
         <div className="xl:col-span-4">
@@ -230,7 +240,10 @@ export default function CustomerManager() {
                   type="text"
                   placeholder="Tìm tên, email, SĐT..."
                   value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
                 />
               </div>
@@ -247,18 +260,18 @@ export default function CustomerManager() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Email</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">SĐT</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Địa Chỉ</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Thao Tác</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Khách Hàng</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Email</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">SĐT</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Địa Chỉ</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Thao Tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                    {filteredCustomers.map((kh) => (
+                  <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                    {currentCustomers.map((kh) => (
                       <tr key={kh.MaND} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                        <td className="px-5 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                        <td className="px-5 py-4 font-bold text-xs text-[#A1887F]">
                           #{kh.MaND}
                         </td>
                         <td className="px-5 py-4">
@@ -266,13 +279,13 @@ export default function CustomerManager() {
                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#C5963A] to-[#D4A84B] text-[#1A0F0A] flex items-center justify-center font-bold text-xs">
                               {kh.HoTen?.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-serif font-bold text-[#2C1810]">{kh.HoTen}</span>
+                            <span className="font-bold text-xs text-[#2C1810]">{kh.HoTen}</span>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-xs text-[#6D4C41]">
                           {kh.Email}
                         </td>
-                        <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                        <td className="px-5 py-4 text-xs text-[#6D4C41]">
                           {kh.SDT || <span className="text-[#A1887F] italic">—</span>}
                         </td>
                         <td className="px-5 py-4 text-xs text-[#8D6E63] max-w-[160px] truncate" title={kh.DiaChi}>
@@ -301,6 +314,16 @@ export default function CustomerManager() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            {/* Phân trang */}
+            {totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             )}
 
           </div>

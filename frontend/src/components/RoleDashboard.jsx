@@ -43,12 +43,12 @@ export default function RoleDashboard({ role, children }) {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   
-  // Chuẩn hóa role không phân biệt hoa thường
+  // Chuẩn hóa role
   const normalizedRole = (role || user.VaiTro || "").toLowerCase() === "admin" ? "Admin" : "NhanVien";
   const isAdmin = normalizedRole === "Admin";
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
 
-  // Đóng sidebar khi chuyển trang (mobile)
+  // Đóng sidebar khi chuyển trang trên mobile
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
@@ -67,7 +67,7 @@ export default function RoleDashboard({ role, children }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] flex font-sans">
+    <div className="min-h-screen bg-[#FAF7F5] flex font-sans selection:bg-[#C5963A] selection:text-white">
       {/* Overlay mobile */}
       {sidebarOpen && (
         <div
@@ -76,30 +76,30 @@ export default function RoleDashboard({ role, children }) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Full Height Sticky */}
       <aside
         className={`
-          fixed top-0 left-0 h-full z-50
+          fixed top-0 left-0 h-screen z-50
           bg-[#1A0F0A] text-white
           transition-all duration-300 ease-in-out
-          flex flex-col border-r border-white/5
+          flex flex-col border-r border-white/10
           ${collapsed ? "w-20" : "w-64"}
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static
+          ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+          lg:translate-x-0 lg:sticky lg:top-0
         `}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        {/* Logo Section */}
+        <div className="flex items-center justify-between p-5 border-b border-white/10 flex-shrink-0">
           {!collapsed && (
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-[#C5963A] to-[#D4A84B] rounded-2xl flex items-center justify-center shadow-lg text-[#1A0F0A] font-bold">
                 <Coffee className="w-5 h-5 text-[#1A0F0A]" />
               </div>
               <div>
-                <h1 className="font-serif text-lg font-black tracking-wide text-white">P-Coffee</h1>
-                <p className="text-[10px] text-[#C5963A] font-bold uppercase tracking-widest">
-                  {isAdmin ? "QUẢN TRỊ VIÊN (ADMIN)" : "NHÂN VIÊN QUẦY"}
-                </p>
+                <h1 className="font-serif text-lg font-black tracking-wide text-white leading-tight">P-COFFEE</h1>
+                <span className="inline-block px-2 py-0.5 mt-0.5 rounded-md bg-white/10 text-[9px] font-bold text-[#C5963A] uppercase tracking-wider">
+                  {isAdmin ? "Quản Trị Viên" : "Nhân Viên Quầy"}
+                </span>
               </div>
             </div>
           )}
@@ -117,7 +117,7 @@ export default function RoleDashboard({ role, children }) {
           </button>
         </div>
 
-        {/* Menu */}
+        {/* Menu Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto scrollbar-none">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -130,7 +130,7 @@ export default function RoleDashboard({ role, children }) {
                   w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl
                   text-xs font-semibold transition-all duration-200 cursor-pointer
                   ${active
-                    ? "bg-[#C5963A] text-[#1A0F0A] font-bold shadow-md shadow-[#C5963A]/20"
+                    ? "bg-gradient-to-r from-[#C5963A] to-[#D4A84B] text-[#1A0F0A] font-bold shadow-md shadow-[#C5963A]/25"
                     : "text-[#D7CCC8] hover:bg-white/10 hover:text-white"
                   }
                   ${collapsed ? "justify-center" : ""}
@@ -149,18 +149,18 @@ export default function RoleDashboard({ role, children }) {
           })}
         </nav>
 
-        {/* User Info + Logout */}
-        <div className="border-t border-white/10 p-3 space-y-2">
+        {/* User Info + Logout (Sticky Bottom) */}
+        <div className="border-t border-white/10 p-3 space-y-2 flex-shrink-0 bg-[#160D09]">
           {!collapsed && (
-            <div className="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-2xl">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#C5963A] to-[#D4A84B] rounded-xl flex items-center justify-center text-xs font-bold text-[#1A0F0A] shadow-md">
+            <div className="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-2xl border border-white/5">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#C5963A] to-[#D4A84B] rounded-xl flex items-center justify-center text-xs font-bold text-[#1A0F0A] shadow-md flex-shrink-0">
                 {user.HoTen?.[0]?.toUpperCase() || "A"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white truncate">
+                <p className="text-xs font-bold text-white truncate font-sans">
                   {user.HoTen || "Admin"}
                 </p>
-                <p className="text-[11px] text-[#A1887F] truncate font-mono">
+                <p className="text-[11px] text-[#A1887F] truncate font-sans">
                   {user.Email || "admin@pcoffee.com"}
                 </p>
               </div>
@@ -182,12 +182,12 @@ export default function RoleDashboard({ role, children }) {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#EFEBE9]">
-          <div className="flex items-center justify-between px-4 lg:px-8 h-16">
-            {/* Left: Hamburger */}
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#EFEBE9] h-16">
+          <div className="flex items-center justify-between px-4 lg:px-8 h-full">
+            {/* Left: Hamburger Button */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -203,7 +203,7 @@ export default function RoleDashboard({ role, children }) {
               </button>
             </div>
 
-            {/* Right: POS Button + Avatar */}
+            {/* Right: POS Quick Action + User Badge */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() =>
@@ -226,8 +226,8 @@ export default function RoleDashboard({ role, children }) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-8 animate-fade-in">
+        {/* Page Body */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in">
           {children || <Outlet />}
         </main>
       </div>

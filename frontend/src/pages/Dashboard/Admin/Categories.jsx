@@ -4,6 +4,7 @@ import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function Categories() {
   const [loaiMons, setLoaiMons] = useState([]);
@@ -12,6 +13,10 @@ export default function Categories() {
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Phân trang limit 10
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => { 
     loadLoaiMons(); 
@@ -78,6 +83,11 @@ export default function Categories() {
     (lm.MoTa && lm.MoTa.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const totalItems = filteredCategories.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentCategories = filteredCategories.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <DashboardLayout title="Quản Lý Danh Mục">
       {message && (
@@ -90,7 +100,7 @@ export default function Categories() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start font-sans">
         
         {/* Form Column */}
         <div className="xl:col-span-4">
@@ -173,7 +183,10 @@ export default function Categories() {
                   type="text"
                   placeholder="Tìm kiếm..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
                 />
               </div>
@@ -190,20 +203,20 @@ export default function Categories() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã</th>
-                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tên Loại Món</th>
-                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mô Tả</th>
-                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Thao Tác</th>
+                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã</th>
+                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tên Loại Món</th>
+                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mô Tả</th>
+                      <th className="px-6 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Thao Tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                    {filteredCategories.map((lm) => (
+                  <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                    {currentCategories.map((lm) => (
                       <tr key={lm.MaLM} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                        <td className="px-6 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                        <td className="px-6 py-4 font-bold text-xs text-[#A1887F]">
                           #{lm.MaLM}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="font-serif font-bold text-[#2C1810] text-base">{lm.TenLM}</span>
+                          <span className="font-bold text-xs text-[#2C1810]">{lm.TenLM}</span>
                         </td>
                         <td className="px-6 py-4 text-xs text-[#6D4C41]">
                           {lm.MoTa || <span className="italic text-[#A1887F]">Không có mô tả</span>}
@@ -231,6 +244,16 @@ export default function Categories() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            {/* Phân trang */}
+            {totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             )}
 
           </div>

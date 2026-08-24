@@ -15,6 +15,7 @@ import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
+import Pagination from "../../../components/ui/Pagination";
 
 const API_URL = import.meta.env.DEV 
   ? "http://localhost:4000" 
@@ -36,6 +37,10 @@ export default function Products() {
   const [filterLoai, setFilterLoai] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Phân trang limit 10
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => { 
     loadLoaiMons(); 
@@ -144,7 +149,7 @@ export default function Products() {
       loadMons(); 
     } catch (err) { 
       setMessage("❌ " + (err.response?.data?.message || "Không thể xóa món này")); 
-    } finally {
+    } finally { 
       setTimeout(() => setMessage(""), 3500); 
     }
   };
@@ -167,6 +172,11 @@ export default function Products() {
     return matchLoai && matchSearch;
   });
 
+  const totalItems = filteredMons.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentMons = filteredMons.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <DashboardLayout title="Quản Lý Món & Menu">
       {message && (
@@ -179,7 +189,7 @@ export default function Products() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start font-sans">
         
         {/* Form Column */}
         <div className="xl:col-span-4">
@@ -323,10 +333,10 @@ export default function Products() {
             <div className="p-6 border-b border-[#FAF7F2] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-serif text-xl font-bold text-[#2C1810]">
-                  Danh Sách Thực Đơn
+                  Danh Sách Thực Đơn ({filteredMons.length})
                 </h3>
                 <p className="text-xs text-[#8D6E63] mt-0.5">
-                  Hiển thị {filteredMons.length} món trong hệ thống
+                  Quản lý danh sách các món nước và bảng giá từng size
                 </p>
               </div>
 
@@ -337,14 +347,20 @@ export default function Products() {
                     type="text"
                     placeholder="Tìm tên món..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
                   />
                 </div>
 
                 <select
                   value={filterLoai}
-                  onChange={(e) => setFilterLoai(e.target.value)}
+                  onChange={(e) => {
+                    setFilterLoai(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-semibold text-[#4E342E] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30 cursor-pointer"
                 >
                   <option value="">Tất cả loại</option>
@@ -367,23 +383,23 @@ export default function Products() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Hình</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tên Món</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Danh Mục</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Bảng Giá</th>
-                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Thao Tác</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Hình</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tên Món</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Danh Mục</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Bảng Giá</th>
+                      <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Thao Tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                    {filteredMons.map((m) => {
+                  <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                    {currentMons.map((m) => {
                       const displayImg = m.HinhAnh 
                         ? (m.HinhAnh.startsWith('http') ? m.HinhAnh : `${API_URL}${m.HinhAnh}`)
                         : "https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=300&auto=format&fit=crop";
 
                       return (
                         <tr key={m.MaMon} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                          <td className="px-5 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                          <td className="px-5 py-4 font-bold text-xs text-[#A1887F]">
                             #{m.MaMon}
                           </td>
                           <td className="px-5 py-4">
@@ -395,8 +411,8 @@ export default function Products() {
                             />
                           </td>
                           <td className="px-5 py-4">
-                            <p className="font-serif font-bold text-[#2C1810]">{m.TenMon}</p>
-                            {m.MoTa && <p className="text-xs text-[#8D6E63] line-clamp-1 mt-0.5">{m.MoTa}</p>}
+                            <p className="font-bold text-xs text-[#2C1810]">{m.TenMon}</p>
+                            {m.MoTa && <p className="text-[11px] text-[#8D6E63] line-clamp-1 mt-0.5">{m.MoTa}</p>}
                           </td>
                           <td className="px-5 py-4">
                             <span className="px-3 py-1 bg-[#FAF7F2] text-[#4E342E] text-xs font-bold rounded-full border border-[#EFEBE9]">
@@ -446,6 +462,16 @@ export default function Products() {
                   </tbody>
                 </table>
               </div>
+            )}
+
+            {/* Phân trang */}
+            {totalItems > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={totalItems}
+                pageSize={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
             )}
 
           </div>

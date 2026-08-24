@@ -12,6 +12,7 @@ import DashboardLayout from "../../../components/DashboardLayout";
 import api from "../../../services/api";
 import InvoicePrint from "../../../components/InvoicePrint";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function BillManager() {
   const [bills, setBills] = useState([]); 
@@ -23,6 +24,10 @@ export default function BillManager() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+
+  // Phân trang 10 mục / trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => { 
     loadBills(); 
@@ -46,6 +51,11 @@ export default function BillManager() {
     (b.TenKhach && b.TenKhach.toLowerCase().includes(search.toLowerCase())) || 
     (b.TrangThai && b.TrangThai.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const totalItems = filteredBills.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentBills = filteredBills.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleDelete = async (id) => { 
     if (window.confirm("Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác!")) { 
@@ -91,7 +101,7 @@ export default function BillManager() {
 
   return (
     <DashboardLayout title="Quản Lý Hóa Đơn & Sổ Thu">
-      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 animate-fade-in">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 font-sans animate-fade-in">
         
         {/* Controls Toolbar */}
         <div className="p-6 border-b border-[#FAF7F2] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -110,7 +120,10 @@ export default function BillManager() {
               type="text" 
               placeholder="Tìm mã HĐ, mã ĐH, tên khách..." 
               value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }} 
               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
             />
           </div>
@@ -133,32 +146,32 @@ export default function BillManager() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã HĐ</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Ngày Lập</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Hình Thức</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Hành Động</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã HĐ</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Ngày Lập</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Hình Thức</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Hành Động</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                {filteredBills.map((b) => (
+              <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                {currentBills.map((b) => (
                   <tr key={b.MaHD} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#A1887F]">
                       #{b.MaHD}
                     </td>
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#C5963A]">
                       #{b.MaDH}
                     </td>
-                    <td className="px-5 py-4 font-serif font-bold text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#2C1810]">
                       {b.TenKhach || "Khách tại quầy"}
                     </td>
-                    <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
                       {formatDate(b.NgayLap)}
                     </td>
-                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-sm text-[#2C1810]">
                       {formatMoney(b.TongTien)}
                     </td>
                     <td className="px-5 py-4 text-xs text-[#6D4C41]">
@@ -200,12 +213,22 @@ export default function BillManager() {
             </table>
           </div>
         )}
+
+        {/* Phân Trang */}
+        {!loading && totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </div>
 
       {/* Modal Cập Nhật Trạng Thái */}
       {showStatusModal && editingBill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowStatusModal(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-scale-in space-y-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-scale-in space-y-5 font-sans" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-serif text-xl font-bold text-[#2C1810]">
               Cập Nhật Trạng Thái HĐ #{editingBill.MaHD}
             </h3>

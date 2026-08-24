@@ -18,6 +18,7 @@ import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import InvoicePrint from "../../../components/InvoicePrint";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import Pagination from "../../../components/ui/Pagination";
 
 const API_URL = import.meta.env.DEV 
   ? "http://localhost:4000" 
@@ -36,6 +37,10 @@ export default function Orders() {
   const [isLoading, setIsLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Phân trang 10 mục / trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => { 
     loadDonHangs(); 
@@ -131,6 +136,12 @@ export default function Orders() {
     return matchStatus && matchSearch; 
   });
 
+  // Tính toán phân trang
+  const totalItems = filteredDonHangs.length;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
+  const currentOrders = filteredDonHangs.slice(indexOfFirstItem, indexOfLastItem);
+
   const formatDate = (dateString) => new Date(dateString).toLocaleString('vi-VN');
   const formatCurrency = (amount) => Number(amount || 0).toLocaleString('vi-VN') + ' đ';
   const getImageUrl = (imagePath) => { 
@@ -152,7 +163,7 @@ export default function Orders() {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 font-sans">
         
         {/* Controls Toolbar */}
         <div className="p-6 border-b border-[#FAF7F2] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -172,14 +183,20 @@ export default function Orders() {
                 type="text" 
                 placeholder="Tìm mã ĐH, khách, SĐT..." 
                 value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }} 
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
               />
             </div>
 
             <select 
               value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)} 
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }} 
               className="px-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-semibold text-[#4E342E] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
             >
               <option value="">Tất cả trạng thái</option>
@@ -215,33 +232,33 @@ export default function Orders() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Thời Gian</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Hình Thức</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
-                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Hành Động</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Thời Gian</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Hình Thức</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider font-sans text-center">Hành Động</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FAF7F2] text-sm">
-                {filteredDonHangs.map((dh) => (
+              <tbody className="divide-y divide-[#FAF7F2] text-sm font-sans">
+                {currentOrders.map((dh) => (
                   <tr key={dh.MaDH} className="hover:bg-[#FAF7F2]/60 transition-colors">
-                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                    <td className="px-5 py-4 font-bold text-xs text-[#C5963A]">
                       #{dh.MaDH}
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-serif font-bold text-[#2C1810]">
+                      <p className="font-bold text-xs text-[#2C1810]">
                         {dh.TenNguoiNhan || dh.HoTen || "Khách qua đường"}
                       </p>
-                      <p className="text-xs text-[#8D6E63] font-mono mt-0.5">
+                      <p className="text-[11px] text-[#8D6E63] mt-0.5">
                         {dh.SDTNguoiNhan || dh.Email || "Tại quán"}
                       </p>
                     </td>
-                    <td className="px-5 py-4 text-xs text-[#6D4C41] font-mono">
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
                       {formatDate(dh.NgayDat)}
                     </td>
-                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                    <td className="px-5 py-4 font-bold text-sm text-[#2C1810]">
                       {formatCurrency(dh.TongTien)}
                     </td>
                     <td className="px-5 py-4 text-xs text-[#6D4C41]">
@@ -294,12 +311,22 @@ export default function Orders() {
             </table>
           </div>
         )}
+
+        {/* Component Phân Trang (Limit 10) */}
+        {!isLoading && totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </div>
 
       {/* Modal Chọn Phương Thức Thanh Toán (Thay thế window.prompt) */}
       {showPaymentModal && orderToPay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowPaymentModal(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-scale-in space-y-5" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-scale-in space-y-5 font-sans" onClick={(e) => e.stopPropagation()}>
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
               <CheckCircle className="w-7 h-7" />
             </div>
@@ -308,12 +335,12 @@ export default function Orders() {
               <h3 className="font-serif text-xl font-bold text-[#2C1810]">
                 Thanh Toán Đơn #{orderToPay.MaDH}
               </h3>
-              <p className="text-xs text-[#8D6E63] mt-1">
+              <p className="text-xs text-[#8D6E63] mt-1 font-sans">
                 Tổng số tiền: <strong className="text-[#C5963A] text-sm">{formatCurrency(orderToPay.TongTien)}</strong>
               </p>
             </div>
 
-            <div className="space-y-2.5 text-left">
+            <div className="space-y-2.5 text-left font-sans">
               <button
                 onClick={() => handleUpdateStatus(orderToPay.MaDH, "Đã thanh toán", "Tiền mặt")}
                 className="w-full flex items-center gap-3 p-3.5 rounded-2xl border border-[#EFEBE9] hover:border-[#C5963A] hover:bg-[#FAF7F2] transition-all cursor-pointer group"
@@ -356,7 +383,7 @@ export default function Orders() {
 
             <button
               onClick={() => setShowPaymentModal(false)}
-              className="w-full py-2.5 bg-[#FAF7F2] text-[#6D4C41] text-xs font-bold rounded-xl hover:bg-[#EFEBE9] transition-colors cursor-pointer"
+              className="w-full py-2.5 bg-[#FAF7F2] text-[#6D4C41] text-xs font-bold rounded-xl hover:bg-[#EFEBE9] transition-colors cursor-pointer font-sans"
             >
               Hủy Bỏ
             </button>
@@ -367,7 +394,7 @@ export default function Orders() {
       {/* Modal Chi Tiết Đơn Hàng */}
       {showDetailModal && selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowDetailModal(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-scale-in flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-scale-in flex flex-col font-sans" onClick={(e) => e.stopPropagation()}>
             
             {/* Modal Header */}
             <div className="p-6 border-b border-[#FAF7F2] flex items-center justify-between">
@@ -375,12 +402,12 @@ export default function Orders() {
                 <h3 className="font-serif text-xl font-bold text-[#2C1810]">
                   Chi Tiết Đơn Hàng #{selectedOrder.MaDH}
                 </h3>
-                <p className="text-xs text-[#8D6E63] font-mono mt-0.5">
+                <p className="text-xs text-[#8D6E63] font-sans mt-0.5">
                   Ngày đặt: {formatDate(selectedOrder.NgayDat)}
                 </p>
               </div>
               <button 
-                onClick={() => setShowDetailModal(false)}
+                onClick={() => setShowDetailModal(false)} 
                 className="w-9 h-9 rounded-xl bg-[#FAF7F2] hover:bg-[#EFEBE9] text-[#6D4C41] flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -388,7 +415,7 @@ export default function Orders() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 font-sans">
               {/* Order Meta Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
@@ -400,7 +427,7 @@ export default function Orders() {
 
                 <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
                   <p className="text-[10px] uppercase font-bold text-[#A1887F]">Số điện thoại</p>
-                  <p className="text-xs font-bold text-[#2C1810] mt-0.5 font-mono">
+                  <p className="text-xs font-bold text-[#2C1810] mt-0.5">
                     {selectedOrder.SDTNguoiNhan || selectedOrder.SDT || "—"}
                   </p>
                 </div>
@@ -427,12 +454,12 @@ export default function Orders() {
                         className="w-12 h-12 rounded-xl object-cover border border-[#EFEBE9]" 
                       />
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-serif font-bold text-xs text-[#2C1810] truncate">{item.TenMon}</h5>
+                        <h5 className="font-bold text-xs text-[#2C1810] truncate">{item.TenMon}</h5>
                         <p className="text-[11px] text-[#8D6E63] mt-0.5">
                           Kích cỡ: <strong className="text-[#4E342E]">{item.KichCo}</strong> • SL: <strong className="text-[#4E342E]">{item.SoLuong}</strong>
                         </p>
                       </div>
-                      <span className="font-serif font-black text-sm text-[#C5963A]">
+                      <span className="font-bold text-sm text-[#C5963A]">
                         {formatCurrency(item.DonGia * item.SoLuong)}
                       </span>
                     </div>
@@ -443,7 +470,7 @@ export default function Orders() {
               {/* Total Banner */}
               <div className="p-4 rounded-2xl bg-[#2C1810] text-white flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#D7CCC8]">Tổng tiền thanh toán:</span>
-                <span className="font-serif font-black text-xl text-[#C5963A]">
+                <span className="font-bold text-xl text-[#C5963A]">
                   {formatCurrency(selectedOrder.TongTien)}
                 </span>
               </div>
