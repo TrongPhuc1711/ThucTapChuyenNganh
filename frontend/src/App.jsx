@@ -20,39 +20,45 @@ import CheckoutOrder from './components/CheckoutOrders';
 import PaymentResult from './components/PaymentResult';
 import StaffBills from './pages/Dashboard/Staff/StaffBills';
 import StaffCustomers from './pages/Dashboard/Staff/StaffCustomer';
+
 export const App = () => {
   return (
     <Routes>
+      <Route path="/" element={<Home />} />
       <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      <Route path='/admin' element={<RoleDashboard role="admin" />}>
+      {/* Admin Portal */}
+      <Route path="/admin" element={<RoleDashboard role="Admin" />}>
         <Route index element={<Admin />} />
-        <Route path='/admin/products' element={<Products />} />
-        <Route path='/admin/categories' element={<Categories />} />
-        <Route path='/admin/staffs' element={<StaffManager />} />
-        <Route path='/admin/customers' element={<CustomerManager />} />
-        <Route path='/admin/orders' element={<Orders />} />
-        <Route path='/admin/bills' element={<BillManager />} />
-        <Route path='/admin/thongke' element={<ThongKe />} />
-        <Route path="/admin/create-order" element={<CreateOrder />} />
-        <Route path="/admin/checkout" element={<CheckoutOrder />} />
+        <Route path="products" element={<Products />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="staffs" element={<StaffManager />} />
+        <Route path="customers" element={<CustomerManager />} />
+        <Route path="orders" element={<Orders />} />
+        <Route path="bills" element={<BillManager />} />
+        <Route path="thongke" element={<ThongKe />} />
+        <Route path="create-order" element={<CreateOrder />} />
+        <Route path="checkout" element={<CheckoutOrder />} />
       </Route>
 
-      <Route path='/staff' element={<RoleDashboard role="NhanVien" />}>
+      {/* Staff Portal */}
+      <Route path="/staff" element={<RoleDashboard role="NhanVien" />}>
         <Route index element={<Staff />} /> 
-        <Route path='/staff/orders' element={<StaffOrders />} />
-        <Route path='/staff/products' element={<StaffProducts />} />
-        <Route path='/staff/bills' element={<StaffBills />} />
-        <Route path='/staff/customers' element={<StaffCustomers />} />
-        <Route path="/staff/create-order" element={<CreateOrder />} />
-        <Route path="/staff/checkout" element={<CheckoutOrder />} />
+        <Route path="orders" element={<StaffOrders />} />
+        <Route path="products" element={<StaffProducts />} />
+        <Route path="bills" element={<StaffBills />} />
+        <Route path="customers" element={<StaffCustomers />} />
+        <Route path="create-order" element={<CreateOrder />} />
+        <Route path="checkout" element={<CheckoutOrder />} />
       </Route>
       
       <Route path="/payment-result" element={<PaymentResult />} />
-      <Route path='/customer' element={<Customer />} />
-      <Route path="*" element={<Navigate to="/home" />} />
+      <Route path="/customer" element={<Customer />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
+
+export default App;
