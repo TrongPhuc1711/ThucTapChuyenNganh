@@ -1,38 +1,28 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
-export default function DashboardLayout({ title, children }) {
+export default function DashboardLayout({ title, children, showBack = true }) {
   const navigate = useNavigate();
-  const location = useLocation(); // Lấy thông tin URL hiện tại
-
-  // Logic: Nếu URL chứa chữ "staff" thì về "/staff", ngược lại về "/admin"
-  const handleBack = () => {
-    if (location.pathname.includes("/staff")) {
-      navigate("/staff");
-    } else {
-      navigate("/admin");
-    }
-  };
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-page-enter">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-coffee-500 bg-white rounded-xl border border-coffee-100 hover:bg-coffee-50 hover:text-coffee-700 transition-all duration-200 hover:shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Quay lại
-        </button>
-        <h1 className="font-heading text-2xl font-bold text-coffee-800">{title}</h1>
+      <div className="flex items-center gap-3 mb-6">
+        {showBack && (
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-coffee-100/50 text-coffee-400 hover:text-coffee-700 hover:bg-coffee-50 hover:border-coffee-200 transition-all shadow-sm cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        )}
+        <h1 className="font-heading text-xl lg:text-2xl font-bold text-coffee-800">
+          {title}
+        </h1>
       </div>
 
       {/* Content */}
-      <div>
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

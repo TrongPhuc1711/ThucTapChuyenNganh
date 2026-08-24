@@ -1,54 +1,264 @@
 import { useEffect, useState } from "react";
+import { 
+  Trash2, 
+  Edit3, 
+  Printer, 
+  Search, 
+  Receipt,
+  CheckCircle,
+  X
+} from 'lucide-react';
 import DashboardLayout from "../../../components/DashboardLayout";
 import api from "../../../services/api";
-import { Trash2, Edit, Printer } from 'lucide-react';
 import InvoicePrint from "../../../components/InvoicePrint";
+import StatusBadge from "../../../components/ui/StatusBadge";
 
 export default function BillManager() {
-  const [bills, setBills] = useState([]); const [search, setSearch] = useState(""); const [selectedBill, setSelectedBill] = useState(null); const [loading, setLoading] = useState(false);
-  const [printBillData, setPrintBillData] = useState(null); const [printBillItems, setPrintBillItems] = useState([]); const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [bills, setBills] = useState([]); 
+  const [search, setSearch] = useState(""); 
+  const [loading, setLoading] = useState(false);
+  const [printBillData, setPrintBillData] = useState(null); 
+  const [printBillItems, setPrintBillItems] = useState([]); 
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [editingBill, setEditingBill] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
 
-  useEffect(() => { loadBills(); }, []);
-  const loadBills = async () => { try { const res = await api.get("/hoadon"); setBills(res.data); } catch (err) { alert("Không thể tải hóa đơn"); } };
-  const filteredBills = bills.filter(b => b.MaHD.toString().includes(search) || b.TenKhach?.toLowerCase().includes(search.toLowerCase()) || b.TrangThai?.toLowerCase().includes(search.toLowerCase()));
-  const handleDelete = async (id) => { if (window.confirm("Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác!")) { try { await api.delete(`/hoadon/${id}`); alert("Đã xóa thành công!"); loadBills(); } catch (err) { alert("Lỗi khi xóa hóa đơn"); } } };
-  const handleUpdateStatus = async (id, currentStatus) => { const newStatus = prompt("Nhập trạng thái mới (Đã thanh toán / Đã hoàn tiền / Đã hủy):", currentStatus); if (newStatus && newStatus !== currentStatus) { try { await api.put(`/hoadon/${id}`, { TrangThai: newStatus }); alert("Cập nhật trạng thái thành công!"); loadBills(); } catch (err) { alert("Lỗi cập nhật"); } } };
-  const closeDetail = () => setSelectedBill(null);
-  const handlePrintClick = async (bill) => { try { const res = await api.get(`/donhang/chitiet/${bill.MaDH}`); setPrintBillData(bill); setPrintBillItems(res.data); setShowInvoiceModal(true); } catch (err) { alert("Lỗi: Không thể lấy chi tiết hóa đơn để in!"); } };
+  useEffect(() => { 
+    loadBills(); 
+  }, []);
+
+  const loadBills = async () => { 
+    setLoading(true);
+    try { 
+      const res = await api.get("/hoadon"); 
+      setBills(res.data || []); 
+    } catch (err) { 
+      console.error(err); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredBills = bills.filter(b => 
+    b.MaHD.toString().includes(search) || 
+    b.MaDH.toString().includes(search) ||
+    (b.TenKhach && b.TenKhach.toLowerCase().includes(search.toLowerCase())) || 
+    (b.TrangThai && b.TrangThai.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleDelete = async (id) => { 
+    if (window.confirm("Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác!")) { 
+      try { 
+        await api.delete(`/hoadon/${id}`); 
+        loadBills(); 
+      } catch (err) { 
+        alert("Lỗi khi xóa hóa đơn"); 
+      } 
+    } 
+  };
+
+  const openStatusModal = (bill) => {
+    setEditingBill(bill);
+    setNewStatus(bill.TrangThai);
+    setShowStatusModal(true);
+  };
+
+  const handleUpdateStatusConfirm = async () => { 
+    if (!editingBill || !newStatus) return;
+    try { 
+      await api.put(`/hoadon/${editingBill.MaHD}`, { TrangThai: newStatus }); 
+      setShowStatusModal(false);
+      loadBills(); 
+    } catch (err) { 
+      alert("Lỗi cập nhật trạng thái hóa đơn"); 
+    } 
+  };
+
+  const handlePrintClick = async (bill) => { 
+    try { 
+      const res = await api.get(`/donhang/chitiet/${bill.MaDH}`); 
+      setPrintBillData(bill); 
+      setPrintBillItems(res.data || []); 
+      setShowInvoiceModal(true); 
+    } catch (err) { 
+      alert("Lỗi: Không thể lấy chi tiết hóa đơn để in!"); 
+    } 
+  };
+
+  const formatDate = (dateString) => new Date(dateString).toLocaleDateString('vi-VN');
+  const formatMoney = (amount) => Number(amount || 0).toLocaleString('vi-VN') + ' đ';
 
   return (
-    <DashboardLayout title="Quản Lý Hóa Đơn">
-      <div className="bg-white rounded-2xl border border-coffee-100/50 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-coffee-50">
-          <input type="text" placeholder="Tìm theo mã hóa đơn, tên khách hoặc trạng thái..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full md:w-96 px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm" />
+    <DashboardLayout title="Quản Lý Hóa Đơn & Sổ Thu">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 animate-fade-in">
+        
+        {/* Controls Toolbar */}
+        <div className="p-6 border-b border-[#FAF7F2] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-serif text-xl font-bold text-[#2C1810]">
+              Toàn Bộ Hóa Đơn ({filteredBills.length})
+            </h3>
+            <p className="text-xs text-[#8D6E63] mt-0.5">
+              Hồ sơ thanh toán tài khóa của cửa hàng
+            </p>
+          </div>
+
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1887F]" />
+            <input 
+              type="text" 
+              placeholder="Tìm mã HĐ, mã ĐH, tên khách..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
+            />
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full"><thead><tr className="bg-coffee-50/50">
-            <th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Mã HD</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Mã ĐH</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Khách hàng</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Ngày</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Tổng tiền</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">HT TT</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Trạng thái</th><th className="text-center px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Thao tác</th>
-          </tr></thead>
-            <tbody className="divide-y divide-coffee-50">
-              {filteredBills.map((b) => (
-                <tr key={b.MaHD} className="hover:bg-coffee-50/30 transition-colors">
-                  <td className="px-4 py-3 text-sm text-coffee-500">#{b.MaHD}</td>
-                  <td className="px-4 py-3 text-sm text-coffee-500">#{b.MaDH}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-coffee-800">{b.TenKhach}</td>
-                  <td className="px-4 py-3 text-sm text-coffee-500">{b.NgayLap?.split("T")[0]}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-coffee-800">{Number(b.TongTien).toLocaleString()} đ</td>
-                  <td className="px-4 py-3 text-sm text-coffee-500">{b.HinhThucThanhToan}</td>
-                  <td className="px-4 py-3"><span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${b.TrangThai === "Đã thanh toán" ? "bg-success-light text-success" : "bg-warning-light text-warning"}`}>{b.TrangThai}</span></td>
-                  <td className="px-4 py-3"><div className="flex items-center justify-center gap-1.5">
-                    <button className="p-2 text-coffee-500 bg-coffee-50 rounded-lg hover:bg-coffee-100 transition-colors" onClick={() => handlePrintClick(b)} title="In hóa đơn"><Printer size={15} /></button>
-                    <button className="p-2 text-warning bg-warning-light rounded-lg hover:bg-warning/10 transition-colors" onClick={() => handleUpdateStatus(b.MaHD, b.TrangThai)} title="Cập nhật trạng thái"><Edit size={15} /></button>
-                    <button className="p-2 text-danger bg-danger-light rounded-lg hover:bg-danger/10 transition-colors" onClick={() => handleDelete(b.MaHD)} title="Xóa hóa đơn"><Trash2 size={15} /></button>
-                  </div></td>
+
+        {/* Table View */}
+        {loading ? (
+          <div className="p-16 text-center">
+            <div className="w-10 h-10 border-4 border-[#EFEBE9] border-t-[#C5963A] rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-xs font-semibold text-[#8D6E63]">Đang tải danh sách hóa đơn...</p>
+          </div>
+        ) : filteredBills.length === 0 ? (
+          <div className="p-16 text-center">
+            <Receipt className="w-12 h-12 text-[#A1887F] mx-auto mb-3 opacity-40" />
+            <p className="font-serif font-bold text-base text-[#2C1810]">Không có hóa đơn nào</p>
+            <p className="text-xs text-[#8D6E63] mt-1">Các hóa đơn thanh toán sẽ xuất hiện tại đây.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã HĐ</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Ngày Lập</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Hình Thức</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Hành Động</th>
                 </tr>
-              ))}
-              {filteredBills.length === 0 && <tr><td colSpan="8" className="px-4 py-12 text-center text-coffee-300">Không có hóa đơn nào</td></tr>}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-[#FAF7F2] text-sm">
+                {filteredBills.map((b) => (
+                  <tr key={b.MaHD} className="hover:bg-[#FAF7F2]/60 transition-colors">
+                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#A1887F]">
+                      #{b.MaHD}
+                    </td>
+                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                      #{b.MaDH}
+                    </td>
+                    <td className="px-5 py-4 font-serif font-bold text-[#2C1810]">
+                      {b.TenKhach || "Khách tại quầy"}
+                    </td>
+                    <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                      {formatDate(b.NgayLap)}
+                    </td>
+                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                      {formatMoney(b.TongTien)}
+                    </td>
+                    <td className="px-5 py-4 text-xs text-[#6D4C41]">
+                      <span className="px-2.5 py-1 bg-[#FAF7F2] rounded-lg border border-[#EFEBE9] font-medium">
+                        {b.HinhThucThanhToan}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <StatusBadge status={b.TrangThai} />
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => handlePrintClick(b)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
+                          title="In hóa đơn"
+                        >
+                          <Printer className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => openStatusModal(b)}
+                          className="p-2 text-amber-600 hover:bg-amber-50 rounded-xl transition-colors cursor-pointer"
+                          title="Sửa trạng thái"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(b.MaHD)}
+                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                          title="Xóa hóa đơn"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      {showInvoiceModal && printBillData && <InvoicePrint order={printBillData} items={printBillItems} onClose={() => setShowInvoiceModal(false)} />}
+
+      {/* Modal Cập Nhật Trạng Thái */}
+      {showStatusModal && editingBill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowStatusModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-scale-in space-y-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-serif text-xl font-bold text-[#2C1810]">
+              Cập Nhật Trạng Thái HĐ #{editingBill.MaHD}
+            </h3>
+            
+            <div className="space-y-2 text-left">
+              {["Đã thanh toán", "Đã hoàn tiền", "Đã hủy"].map((st) => (
+                <label 
+                  key={st} 
+                  className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                    newStatus === st 
+                      ? 'border-[#C5963A] bg-[#C5963A]/10 text-[#2C1810] font-bold' 
+                      : 'border-[#EFEBE9] hover:bg-[#FAF7F2] text-[#6D4C41]'
+                  }`}
+                >
+                  <span className="text-xs">{st}</span>
+                  <input 
+                    type="radio" 
+                    name="billStatus" 
+                    value={st} 
+                    checked={newStatus === st} 
+                    onChange={(e) => setNewStatus(e.target.value)} 
+                    className="w-4 h-4 text-[#C5963A] focus:ring-[#C5963A]"
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button 
+                onClick={handleUpdateStatusConfirm}
+                className="flex-1 py-2.5 bg-[#2C1810] hover:bg-[#3E2723] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Lưu Thay Đổi
+              </button>
+              <button 
+                onClick={() => setShowStatusModal(false)}
+                className="px-4 py-2.5 bg-[#FAF7F2] text-[#6D4C41] text-xs font-bold rounded-xl hover:bg-[#EFEBE9] transition-colors cursor-pointer"
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal In Hóa Đơn */}
+      {showInvoiceModal && printBillData && (
+        <InvoicePrint 
+          order={printBillData} 
+          items={printBillItems} 
+          onClose={() => setShowInvoiceModal(false)} 
+        />
+      )}
     </DashboardLayout>
   );
 }

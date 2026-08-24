@@ -1,10 +1,11 @@
 import React from 'react';
+import { Printer, X } from 'lucide-react';
 
 export default function InvoicePrint({ order, items, onClose }) {
   if (!order) return null;
 
   const formatCurrency = (amount) => {
-    return Number(amount).toLocaleString('vi-VN') + ' đ';
+    return Number(amount || 0).toLocaleString('vi-VN') + ' đ';
   };
 
   const formatDate = (dateString) => {
@@ -17,85 +18,101 @@ export default function InvoicePrint({ order, items, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-coffee-50 bg-coffee-50/50">
-          <h3 className="font-heading text-lg font-bold text-coffee-800">Xác nhận in lại hóa đơn</h3>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-100 text-coffee-400 hover:text-coffee-700 transition-colors">✕</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full overflow-hidden animate-scale-in flex flex-col" onClick={e => e.stopPropagation()}>
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-[#FAF7F2]">
+          <h3 className="font-serif text-xl font-bold text-[#2C1810]">In Lại Hóa Đơn</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-[#FAF7F2] hover:bg-[#EFEBE9] text-[#6D4C41] flex items-center justify-center transition-colors cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Print Preview Area */}
-        <div className="p-6 bg-cream border-b border-dashed border-coffee-200" id="invoice-print-area">
-          <div className="text-center space-y-1 pb-4 border-b border-coffee-200/50">
-            <h2 className="font-heading text-2xl font-bold text-coffee-800 tracking-wider">P-COFFEE</h2>
-            <p className="text-xs text-coffee-500 font-medium">Địa chỉ: 180 Cao Lỗ, Quận 8, TP.HCM</p>
-            <p className="text-xs text-coffee-400 font-medium">SĐT: 0123 456 789</p>
+        <div className="p-8 bg-[#FAF7F2] border-b border-dashed border-[#D7CCC8]" id="invoice-print-area">
+          <div className="text-center space-y-1 pb-4 border-b border-[#D7CCC8]">
+            <h2 className="font-serif text-2xl font-black text-[#2C1810]">P-COFFEE ROASTERY</h2>
+            <p className="text-xs text-[#6D4C41]">180 Cao Lỗ, Phường 4, Quận 8, TP.HCM</p>
+            <p className="text-xs text-[#6D4C41]">Hotline: 0123 456 789</p>
           </div>
 
           <div className="py-4 text-center space-y-1">
-            <h3 className="font-heading text-lg font-bold text-coffee-800">HÓA ĐƠN BÁN HÀNG</h3>
-            <p className="text-xs text-coffee-500 font-semibold font-mono">Số: #{order.MaDH || order.MaHD}</p>
-            <p className="text-xs text-coffee-400 font-medium">Ngày: {formatDate(order.NgayDat || order.NgayLap)}</p>
+            <h3 className="font-serif text-base font-bold text-[#2C1810] uppercase">HÓA ĐƠN TÀI KHÓA</h3>
+            <p className="text-xs text-[#C5963A] font-bold font-mono">Số: #{order.MaDH || order.MaHD}</p>
+            <p className="text-xs text-[#8D6E63]">Thời gian: {formatDate(order.NgayDat || order.NgayLap)}</p>
           </div>
 
-          <div className="bg-white/50 border border-coffee-100/50 rounded-xl p-3.5 space-y-2 text-xs text-coffee-700 mb-4">
+          <div className="bg-white border border-[#EFEBE9] rounded-2xl p-4 space-y-2 text-xs text-[#4E342E] mb-4">
             <div className="flex justify-between">
-              <span className="text-coffee-400">Khách hàng:</span>
-              <span className="font-semibold text-coffee-800">{order.TenNguoiNhan || order.HoTen || order.TenKhach || "Khách hàng"}</span>
+              <span className="text-[#A1887F]">Khách hàng:</span>
+              <span className="font-serif font-bold text-[#2C1810]">{order.TenNguoiNhan || order.HoTen || order.TenKhach || "Khách tại quầy"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-coffee-400">SĐT khách:</span>
-              <span className="font-semibold text-coffee-800 font-mono">{order.SDTNguoiNhan || order.SDT || "—"}</span>
+              <span className="text-[#A1887F]">Số điện thoại:</span>
+              <span className="font-mono text-[#2C1810]">{order.SDTNguoiNhan || order.SDT || "—"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-coffee-400">Phương thức:</span>
-              <span className="font-semibold text-coffee-800">{order.PhuongThucThanhToan || order.HinhThucThanhToan || "Tiền mặt"}</span>
+              <span className="text-[#A1887F]">Hình thức thanh toán:</span>
+              <span className="font-semibold text-[#2C1810]">{order.PhuongThucThanhToan || order.HinhThucThanhToan || "Tiền mặt"}</span>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-coffee-700">
+            <table className="w-full text-xs text-[#2C1810]">
               <thead>
-                <tr className="border-b border-coffee-200 pb-2 text-coffee-400">
-                  <th className="text-left font-semibold pb-2 w-8">STT</th>
-                  <th className="text-left font-semibold pb-2">Tên món</th>
-                  <th className="text-center font-semibold pb-2 w-12">Size</th>
-                  <th className="text-center font-semibold pb-2 w-10">SL</th>
-                  <th className="text-right font-semibold pb-2">Đơn giá</th>
-                  <th className="text-right font-semibold pb-2">Thành tiền</th>
+                <tr className="border-b border-[#D7CCC8] text-[10px] uppercase font-bold text-[#A1887F]">
+                  <th className="text-left pb-2">STT</th>
+                  <th className="text-left pb-2">Tên Món</th>
+                  <th className="text-center pb-2">Size</th>
+                  <th className="text-center pb-2">SL</th>
+                  <th className="text-right pb-2">Đơn Giá</th>
+                  <th className="text-right pb-2">Thành Tiền</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-coffee-100/50">
+              <tbody className="divide-y divide-[#EFEBE9]">
                 {items.map((item, index) => (
                   <tr key={index}>
-                    <td className="py-2 text-coffee-400 font-medium">{index + 1}</td>
-                    <td className="py-2 text-coffee-800 font-medium">{item.TenMon}</td>
-                    <td className="py-2 text-center text-coffee-600 font-bold">{item.KichCo}</td>
-                    <td className="py-2 text-center text-coffee-600 font-semibold">{item.SoLuong}</td>
-                    <td className="py-2 text-right font-mono text-coffee-700">{formatCurrency(item.DonGia)}</td>
-                    <td className="py-2 text-right font-bold text-coffee-800">{formatCurrency(item.DonGia * item.SoLuong)}</td>
+                    <td className="py-2.5 text-[#A1887F] font-mono">{index + 1}</td>
+                    <td className="py-2.5 font-serif font-bold text-[#2C1810]">{item.TenMon}</td>
+                    <td className="py-2.5 text-center font-bold text-[#6D4C41]">{item.KichCo}</td>
+                    <td className="py-2.5 text-center font-bold text-[#4E342E]">{item.SoLuong}</td>
+                    <td className="py-2.5 text-right font-mono text-[#6D4C41]">{formatCurrency(item.DonGia)}</td>
+                    <td className="py-2.5 text-right font-mono font-bold text-[#C5963A]">{formatCurrency(item.DonGia * item.SoLuong)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-dashed border-coffee-200 pt-2 font-sm">
-                  <td colSpan="5" className="py-3 text-right font-bold text-coffee-700 uppercase tracking-wider">TỔNG CỘNG:</td>
-                  <td className="py-3 text-right font-heading text-base font-extrabold text-gold">{formatCurrency(order.TongTien)}</td>
+                <tr className="border-t border-dashed border-[#D7CCC8]">
+                  <td colSpan="5" className="py-3 text-right font-serif font-bold text-xs uppercase text-[#4E342E]">Tổng cộng:</td>
+                  <td className="py-3 text-right font-serif font-black text-base text-[#C5963A]">{formatCurrency(order.TongTien)}</td>
                 </tr>
               </tfoot>
             </table>
           </div>
 
-          <div className="text-center pt-6 text-[10px] text-coffee-400 tracking-wider">
-            <p>Cảm ơn quý khách! Hẹn gặp lại bạn!</p>
+          <div className="text-center pt-6 text-[10px] text-[#A1887F] space-y-1">
+            <p>Cảm ơn quý khách! Hẹn gặp lại bạn tại P-Coffee!</p>
           </div>
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 p-6 bg-coffee-50 border-t border-coffee-50">
-          <button onClick={handlePrint} className="flex-1 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/10">In ngay</button>
-          <button onClick={onClose} className="px-4 py-2.5 bg-white border border-coffee-200 text-coffee-600 font-medium rounded-xl text-sm hover:bg-coffee-50 transition-colors">Đóng</button>
+        <div className="flex gap-3 p-6 bg-white border-t border-[#FAF7F2]">
+          <button 
+            onClick={handlePrint} 
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#C5963A] to-[#D4A84B] hover:from-[#B8872D] hover:to-[#C5963A] text-[#1A0F0A] font-bold rounded-2xl text-xs shadow-md transition-all cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            <span>In Ngay</span>
+          </button>
+          <button 
+            onClick={onClose} 
+            className="px-6 py-3 bg-[#FAF7F2] text-[#6D4C41] font-bold rounded-2xl text-xs hover:bg-[#EFEBE9] transition-colors cursor-pointer"
+          >
+            Đóng
+          </button>
         </div>
+
       </div>
     </div>
   );

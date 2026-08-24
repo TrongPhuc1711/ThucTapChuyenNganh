@@ -1,134 +1,231 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Coffee,
+  FolderTree,
+  Users,
+  UserCheck,
+  BarChart3,
+  Receipt,
+  ShoppingBag,
+  LogOut,
+  Menu,
+  X,
+  ChevronRight,
+  PlusCircle,
+} from "lucide-react";
 
-import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+const ADMIN_MENU = [
+  { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
+  { label: "Quản lý món", path: "/admin/products", icon: Coffee },
+  { label: "Quản lý loại món", path: "/admin/categories", icon: FolderTree },
+  { label: "Quản lý nhân viên", path: "/admin/staffs", icon: UserCheck },
+  { label: "Quản lý khách hàng", path: "/admin/customers", icon: Users },
+  { label: "Thống kê doanh thu", path: "/admin/thongke", icon: BarChart3 },
+  { label: "Quản lý hóa đơn", path: "/admin/bills", icon: Receipt },
+  { label: "Quản lý đơn hàng", path: "/admin/orders", icon: ShoppingBag },
+];
 
-export default function RoleLayout({ role = "staff" }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+const STAFF_MENU = [
+  { label: "Dashboard", path: "/staff", icon: LayoutDashboard },
+  { label: "Đơn hàng", path: "/staff/orders", icon: ShoppingBag },
+  { label: "Danh sách món", path: "/staff/products", icon: Coffee },
+  { label: "Hóa đơn", path: "/staff/bills", icon: Receipt },
+  { label: "Khách hàng", path: "/staff/customers", icon: Users },
+];
+
+export default function RoleDashboard({ role, children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
-  // Định nghĩa menu
-  const MENUS = {
-    admin: [
-      { path: "/admin", icon: "🏠", title: "Dashboard" },
-      { path: "/admin/products", icon: "☕", title: "Quản lý món" },
-      { path: "/admin/categories", icon: "📋", title: "Quản lý loại" },
-      { path: "/admin/staffs", icon: "👨‍💼", title: "Nhân viên" },
-      { path: "/admin/customers", icon: "👥", title: "Khách hàng" },
-      { path: "/admin/thongke", icon: "📊", title: "Thống kê" },
-      { path: "/admin/bills", icon: "🧾", title: "Hóa đơn" },
-      { path: "/admin/orders", icon: "📦", title: "Đơn hàng" }
-    ],
-    staff: [
-      { path: "/staff", icon: "🏠", title: "Dashboard" },
-      { path: "/staff/products", icon: "☕", title: "Danh sách món" },
-      { path: "/staff/orders", icon: "📦", title: "Đơn hàng" },
-      { path: "/staff/bills", icon: "🧾", title: "Hóa đơn" },
-      { path: "/staff/customers", icon: "👥", title: "Khách hàng" }
-    ]
-  };
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const menuItems = role === "Admin" ? ADMIN_MENU : STAFF_MENU;
 
-  const currentMenu = MENUS[role] || MENUS.staff;
+  // Đóng sidebar khi chuyển trang (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
-    const confirm = window.confirm("Bạn muốn đăng xuất?");
-    if (confirm) navigate("/");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  const isActive = (path) => {
+    if (path === `/${role.toLowerCase()}`) {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <div className="flex h-screen bg-coffee-50 font-sans overflow-hidden">
-      {/* SIDEBAR */}
-      <aside
-        className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } bg-gradient-to-b from-coffee-900 via-coffee-800 to-coffee-900 flex flex-col transition-all duration-300 ease-out relative shadow-2xl shadow-coffee-900/50 flex-shrink-0`}
-      >
-        {/* Toggle Button */}
-        <button
-          className="absolute -right-3 top-7 w-6 h-6 bg-gold text-coffee-900 rounded-full flex items-center justify-center text-xs font-bold shadow-lg hover:bg-gold-light transition-all z-10 hover:scale-110"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          title={isSidebarOpen ? "Thu gọn" : "Mở rộng"}
-        >
-          {isSidebarOpen ? "◀" : "▶"}
-        </button>
+    <div className="min-h-screen bg-coffee-50 flex">
+      {/* Overlay mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-coffee-900/50 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full z-50
+          bg-coffee-900 text-white
+          transition-all duration-300 ease-in-out
+          flex flex-col
+          ${collapsed ? "w-20" : "w-64"}
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0 lg:static
+        `}
+      >
         {/* Logo */}
-        <div className={`px-5 py-6 border-b border-coffee-700/30 ${isSidebarOpen ? '' : 'px-3'}`}>
-          {isSidebarOpen ? (
-            <div className="animate-fade-in">
-              <h2 className="font-heading text-2xl font-bold text-white tracking-tight">P-Coffee ☕</h2>
-              <p className="text-coffee-400 text-xs mt-1 font-medium tracking-wider uppercase">
-                {role === 'admin' ? 'Administrator' : 'Staff Mode'}
-              </p>
+        <div className="flex items-center justify-between p-5 border-b border-coffee-700/50">
+          {!collapsed && (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-gold to-gold-light rounded-xl flex items-center justify-center shadow-lg">
+                <Coffee className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="font-heading text-lg font-bold tracking-wide">P-Coffee</h1>
+                <p className="text-[10px] text-coffee-400 font-ui uppercase tracking-widest">
+                  {role === "Admin" ? "Quản trị" : "Nhân viên"}
+                </p>
+              </div>
             </div>
-          ) : (
-            <h2 className="font-heading text-xl font-bold text-gold text-center">P</h2>
           )}
+          {collapsed && (
+            <div className="w-10 h-10 bg-gradient-to-br from-gold to-gold-light rounded-xl flex items-center justify-center shadow-lg mx-auto">
+              <Coffee className="w-5 h-5 text-white" />
+            </div>
+          )}
+          {/* Nút đóng mobile */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-800 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Menu Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {currentMenu.map((item) => {
-            const isActive = location.pathname === item.path;
+        {/* Menu */}
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-none">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
             return (
-              <div
+              <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
-                  isActive
-                    ? "bg-gold/15 text-gold shadow-sm"
-                    : "text-coffee-300 hover:bg-white/5 hover:text-white"
-                } ${!isSidebarOpen ? 'justify-center px-2' : ''}`}
-                title={!isSidebarOpen ? item.title : ''}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
+                  text-sm font-medium transition-all duration-200 cursor-pointer
+                  ${active
+                    ? "bg-gold/20 text-gold shadow-sm"
+                    : "text-coffee-300 hover:bg-coffee-800 hover:text-white"
+                  }
+                  ${collapsed ? "justify-center" : ""}
+                `}
+                title={collapsed ? item.label : ""}
               >
-                <span className={`text-lg flex-shrink-0 ${isActive ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
-                  {item.icon}
-                </span>
-                {isSidebarOpen && (
-                  <span className={`text-sm font-medium whitespace-nowrap ${isActive ? 'text-gold' : ''}`}>
-                    {item.title}
-                  </span>
+                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-gold" : ""}`} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {active && <ChevronRight className="w-4 h-4 text-gold/60" />}
+                  </>
                 )}
-                {isActive && isSidebarOpen && (
-                  <div className="ml-auto w-1.5 h-1.5 bg-gold rounded-full"></div>
-                )}
-              </div>
+              </button>
             );
           })}
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-3 border-t border-coffee-700/30">
+        {/* User Info + Logout */}
+        <div className="border-t border-coffee-700/50 p-3 space-y-2">
+          {!collapsed && (
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-light rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                {user.HoTen?.[0]?.toUpperCase() || "U"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {user.HoTen || "Người dùng"}
+                </p>
+                <p className="text-xs text-coffee-400 truncate">
+                  {user.Email || ""}
+                </p>
+              </div>
+            </div>
+          )}
           <button
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-coffee-400 hover:bg-danger/10 hover:text-danger transition-all duration-200 ${!isSidebarOpen ? 'justify-center px-2' : ''}`}
             onClick={handleLogout}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
+              text-sm font-medium text-coffee-400 cursor-pointer
+              hover:bg-danger/10 hover:text-danger
+              transition-all duration-200
+              ${collapsed ? "justify-center" : ""}
+            `}
           >
-            <span className="text-lg flex-shrink-0">🚪</span>
-            {isSidebarOpen && <span className="text-sm font-medium">Đăng xuất</span>}
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            {!collapsed && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="h-16 bg-white/80 backdrop-blur-lg border-b border-coffee-100 flex items-center justify-between px-6 flex-shrink-0 shadow-sm">
-          <h3 className="text-coffee-700 font-semibold text-lg">
-            Hệ thống quản lý <span className="text-gold font-heading">P-Coffee</span>
-          </h3>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-coffee-500">
-              Xin chào, <b className="text-coffee-700">{role === 'admin' ? 'Admin' : 'Nhân viên'}</b>
-            </span>
-            <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-dark rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md shadow-gold/20">
-              {role === 'admin' ? 'A' : 'S'}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-coffee-100/50">
+          <div className="flex items-center justify-between px-4 lg:px-6 h-16">
+            {/* Left: Hamburger + Breadcrumb */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl hover:bg-coffee-50 text-coffee-600 transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl hover:bg-coffee-50 text-coffee-400 transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Right: Quick Actions */}
+            <div className="flex items-center gap-2">
+              {(role === "Admin" || role === "NhanVien") && (
+                <button
+                  onClick={() =>
+                    navigate(
+                      role === "Admin"
+                        ? "/admin/create-order"
+                        : "/staff/create-order"
+                    )
+                  }
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gold to-gold-light text-white text-sm font-medium rounded-xl hover:from-gold-dark hover:to-gold transition-all shadow-sm cursor-pointer"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Tạo đơn</span>
+                </button>
+              )}
+              <div className="w-9 h-9 bg-gradient-to-br from-coffee-700 to-coffee-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
+                {user.HoTen?.[0]?.toUpperCase() || "U"}
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-coffee-50/50">
-          <Outlet />
+        <main className="flex-1 p-4 lg:p-6 animate-page-enter">
+          {children}
         </main>
       </div>
     </div>

@@ -1,24 +1,45 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  Package, 
+  Clock, 
+  CheckCircle2, 
+  Truck, 
+  Coffee, 
+  Receipt, 
+  Users, 
+  ShoppingBag,
+  ArrowRight,
+  Sparkles,
+  PlusCircle
+} from "lucide-react";
 import api from "../../../services/api";
 
 export default function Staff() {
   const navigate = useNavigate();
-  const [statistics, setStatistics] = useState({ totalOrders: 0, pendingOrders: 0, processingOrders: 0, completedToday: 0 });
+  const [statistics, setStatistics] = useState({ 
+    totalOrders: 0, 
+    pendingOrders: 0, 
+    processingOrders: 0, 
+    completedToday: 0 
+  });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchStatistics(); }, []);
+  useEffect(() => { 
+    fetchStatistics(); 
+  }, []);
+
   const fetchStatistics = async () => {
     try {
       const response = await api.get("/donhang");
-      const orders = response.data;
+      const orders = response.data || [];
       const today = new Date().toDateString();
       setStatistics({
         totalOrders: orders.length,
         pendingOrders: orders.filter(o => o.TrangThai === "Treo").length,
         processingOrders: orders.filter(o => o.TrangThai === "Đang xử lý" || o.TrangThai === "Đang giao").length,
         completedToday: orders.filter(o => {
-          return o.TrangThai === "Đã giao" && new Date(o.NgayDat).toDateString() === today;
+          return (o.TrangThai === "Đã giao" || o.TrangThai === "Đã thanh toán") && new Date(o.NgayDat).toDateString() === today;
         }).length
       });
     } catch (error) {
@@ -29,63 +50,171 @@ export default function Staff() {
   };
 
   const quickActions = [
-    { title: "Xem đơn hàng", description: "Quản lý và cập nhật trạng thái đơn hàng", icon: "📦", gradient: "from-blue-500 to-blue-600", path: "/staff/orders" },
-    { title: "Danh sách món", description: "Xem menu và tìm kiếm món cho khách", icon: "☕", gradient: "from-amber-500 to-amber-600", path: "/staff/products" },
-    { title: "Hóa đơn", description: "Xem và in hóa đơn", icon: "🧾", gradient: "from-emerald-500 to-emerald-600", path: "/staff/bills" },
-    { title: "Khách hàng", description: "Tra cứu thông tin khách hàng", icon: "👥", gradient: "from-purple-500 to-purple-600", path: "/staff/customers" }
+    { 
+      title: "Xử Lý Đơn Hàng", 
+      description: "Xem và cập nhật trạng thái đơn khách đặt", 
+      icon: ShoppingBag, 
+      gradient: "from-blue-600 to-blue-700", 
+      path: "/staff/orders" 
+    },
+    { 
+      title: "Menu & Giá Món", 
+      description: "Tra cứu danh mục và chi tiết size phục vụ khách", 
+      icon: Coffee, 
+      gradient: "from-amber-600 to-amber-700", 
+      path: "/staff/products" 
+    },
+    { 
+      title: "Quản Lý Hóa Đơn", 
+      description: "Tra cứu phiếu thu và in lại hóa đơn cho khách", 
+      icon: Receipt, 
+      gradient: "from-emerald-600 to-emerald-700", 
+      path: "/staff/bills" 
+    },
+    { 
+      title: "Thông Tin Khách Hàng", 
+      description: "Tra cứu số điện thoại và địa chỉ giao hàng", 
+      icon: Users, 
+      gradient: "from-purple-600 to-purple-700", 
+      path: "/staff/customers" 
+    }
   ];
 
-  if (loading) return <div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-4 border-coffee-200 border-t-gold rounded-full animate-spin"></div></div>;
-
   return (
-    <div className="animate-fade-in">
-      {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="font-heading text-3xl font-bold text-coffee-800 mb-2">Chào mừng đến với <span className="text-gold">P-Coffee</span> 🌟</h1>
-        <p className="text-coffee-400">Hệ thống quản lý dành cho nhân viên</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: "Tổng đơn hàng", value: statistics.totalOrders, icon: "📊", gradient: "from-blue-500 to-blue-600" },
-          { label: "Đơn chờ xử lý", value: statistics.pendingOrders, icon: "⏳", gradient: "from-amber-500 to-amber-600" },
-          { label: "Đang xử lý", value: statistics.processingOrders, icon: "🚚", gradient: "from-purple-500 to-purple-600" },
-          { label: "Hoàn thành hôm nay", value: statistics.completedToday, icon: "✅", gradient: "from-emerald-500 to-emerald-600" },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-coffee-100/50 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center text-xl shadow-lg`}>{stat.icon}</div>
-              <div><p className="text-2xl font-bold text-coffee-800">{stat.value}</p><p className="text-xs text-coffee-400">{stat.label}</p></div>
-            </div>
+    <div className="space-y-8 animate-fade-in">
+      
+      {/* Banner */}
+      <div className="p-8 rounded-3xl bg-gradient-to-r from-[#2C1810] via-[#3E2723] to-[#2C1810] text-white shadow-xl shadow-[#2C1810]/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="space-y-2 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-[#E6C687]">
+            <Sparkles className="w-3.5 h-3.5 text-[#C5963A]" />
+            <span>P-Coffee Staff Portal</span>
           </div>
-        ))}
+          <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-white">
+            Bảng Làm Việc Nhân Viên
+          </h1>
+          <p className="text-sm text-[#D7CCC8] font-light max-w-xl">
+            Tiếp nhận đơn hàng, chuẩn bị thức uống và xuất hóa đơn phục vụ khách tại quầy.
+          </p>
+        </div>
+
+        <button
+          onClick={() => navigate("/staff/create-order")}
+          className="relative z-10 px-6 py-3.5 bg-gradient-to-r from-[#C5963A] to-[#D4A84B] hover:from-[#B8872D] hover:to-[#C5963A] text-[#1A0F0A] font-bold text-sm rounded-2xl shadow-lg shadow-[#C5963A]/20 transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap flex items-center gap-2"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Bán Hàng Tại Quầy (POS)</span>
+        </button>
       </div>
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="font-heading text-xl font-bold text-coffee-800 mb-4">Chức năng chính</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {quickActions.map((action, index) => (
-            <div key={index} className="group bg-white rounded-2xl p-5 cursor-pointer border border-coffee-100/50 hover:shadow-xl hover:shadow-coffee-900/5 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-4" onClick={() => navigate(action.path)}>
-              <div className={`w-14 h-14 bg-gradient-to-br ${action.gradient} rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform flex-shrink-0`}>{action.icon}</div>
-              <div className="flex-1"><h3 className="font-semibold text-coffee-800 group-hover:text-gold transition-colors">{action.title}</h3><p className="text-sm text-coffee-400">{action.description}</p></div>
-              <svg className="w-5 h-5 text-coffee-300 group-hover:text-gold group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </div>
-          ))}
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-white rounded-2xl p-6 border border-[#EFEBE9] shadow-sm flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Package className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-[#A1887F] uppercase tracking-wider">Tổng Đơn Hàng</p>
+            <p className="text-2xl font-serif font-black text-[#2C1810] mt-0.5">
+              {loading ? "..." : statistics.totalOrders}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-[#EFEBE9] shadow-sm flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-[#A1887F] uppercase tracking-wider">Chờ Xử Lý</p>
+            <p className="text-2xl font-serif font-black text-amber-600 mt-0.5">
+              {loading ? "..." : statistics.pendingOrders}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-[#EFEBE9] shadow-sm flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Truck className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-[#A1887F] uppercase tracking-wider">Đang Pha Chế / Giao</p>
+            <p className="text-2xl font-serif font-black text-purple-600 mt-0.5">
+              {loading ? "..." : statistics.processingOrders}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-[#EFEBE9] shadow-sm flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-[#A1887F] uppercase tracking-wider">Hoàn Tất Hôm Nay</p>
+            <p className="text-2xl font-serif font-black text-emerald-600 mt-0.5">
+              {loading ? "..." : statistics.completedToday}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Notes */}
-      <div className="bg-coffee-700/5 rounded-2xl p-6 border border-coffee-200/50">
-        <h3 className="font-semibold text-coffee-700 mb-3">📌 Lưu ý quan trọng</h3>
-        <ul className="space-y-2 text-sm text-coffee-500">
-          <li className="flex items-center gap-2"><span className="w-5 h-5 bg-success-light text-success rounded-full flex items-center justify-center text-xs">✓</span> Cập nhật trạng thái đơn hàng kịp thời</li>
-          <li className="flex items-center gap-2"><span className="w-5 h-5 bg-success-light text-success rounded-full flex items-center justify-center text-xs">✓</span> Kiểm tra thông tin đơn hàng trước khi xác nhận</li>
-          <li className="flex items-center gap-2"><span className="w-5 h-5 bg-success-light text-success rounded-full flex items-center justify-center text-xs">✓</span> Hỗ trợ khách hàng tra cứu menu và đơn hàng</li>
-          <li className="flex items-center gap-2"><span className="w-5 h-5 bg-success-light text-success rounded-full flex items-center justify-center text-xs">✓</span> Báo cáo sự cố hoặc vấn đề cho quản lý</li>
-        </ul>
+      {/* Quick Action Cards */}
+      <div>
+        <h2 className="font-serif text-xl font-bold text-[#2C1810] mb-5">
+          Chức Năng Nghiệp Vụ
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <div 
+                key={index} 
+                className="group bg-white rounded-3xl p-6 cursor-pointer border border-[#EFEBE9] hover:border-[#C5963A]/40 hover:shadow-xl hover:shadow-[#2C1810]/5 transition-all duration-300 hover:-translate-y-1 flex items-center gap-5" 
+                onClick={() => navigate(action.path)}
+              >
+                <div className={`w-14 h-14 bg-gradient-to-br ${action.gradient} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-serif font-bold text-[#2C1810] text-base group-hover:text-[#C5963A] transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-xs text-[#8D6E63] mt-0.5 font-light">
+                    {action.description}
+                  </p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-[#A1887F] group-hover:text-[#C5963A] group-hover:translate-x-1 transition-all flex-shrink-0" />
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Staff Operational Guidelines */}
+      <div className="p-6 rounded-3xl bg-white border border-[#EFEBE9] space-y-4">
+        <h3 className="font-serif font-bold text-base text-[#2C1810]">
+          Quy Chuẩn Phục Vụ & Pha Chế P-Coffee
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#6D4C41]">
+          <div className="flex items-center gap-2 p-3 bg-[#FAF7F2] rounded-xl">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">1</span>
+            <span>Ưu tiên pha chế các đơn hàng có trạng thái "Đang xử lý".</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-[#FAF7F2] rounded-xl">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">2</span>
+            <span>Kiểm tra chính xác kích cỡ (Nhỏ / Vừa / Lớn) trên hóa đơn.</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-[#FAF7F2] rounded-xl">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">3</span>
+            <span>In hóa đơn giao cho khách kèm theo mã đơn hàng tương ứng.</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-[#FAF7F2] rounded-xl">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">4</span>
+            <span>Cập nhật trạng thái "Đã giao" ngay khi đưa món cho khách.</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

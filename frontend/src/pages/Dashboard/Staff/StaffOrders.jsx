@@ -1,65 +1,372 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  Eye, 
+  Printer, 
+  Search, 
+  Plus, 
+  X, 
+  ShoppingBag,
+  Clock,
+  Phone,
+  MapPin,
+  CreditCard,
+  Check
+} from "lucide-react";
 import api from "../../../services/api";
 import DashboardLayout from "../../../components/DashboardLayout";
 import InvoicePrint from "../../../components/InvoicePrint";
-import { Printer } from 'lucide-react';
+import StatusBadge from "../../../components/ui/StatusBadge";
 
 export default function StaffOrders() {
-    const navigate = useNavigate();
-    const [orders, setOrders] = useState([]); const [filterOrders, setFilterOrders] = useState([]);
-    const [loading, setLoading] = useState(true); const [selectedOrder, setSelectedOrder] = useState(null); const [orderDetails, setOrderDetails] = useState([]);
-    const [filterStatus, setFilterStatus] = useState("all"); const [search, setSearch] = useState(""); const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-    const statusOptions = [{ value: "all", label: "Tất cả" },{ value: "Treo", label: "Chờ xử lý" },{ value: "Đang xử lý", label: "Đang xử lý" },{ value: "Đang giao", label: "Đang giao" },{ value: "Đã giao", label: "Đã giao" },{ value: "Đã hủy", label: "Đã hủy" }];
-    const filteredOrders = () => { let filter = orders; if (filterStatus !== "all") filter = filter.filter(o => o.TrangThai === filterStatus); if (search) filter = filter.filter(o => o.MaDH.toString().includes(search) || o.TenNguoiNhan.toLowerCase().includes(search.toLowerCase()) || o.SDTNguoiNhan.includes(search)); setFilterOrders(filter); };
-    useEffect(() => { fetchOrders(); }, []); useEffect(() => { filteredOrders(); }, [orders, filterStatus, search]);
-    const fetchOrders = async () => { try { const response = await api.get("/donhang"); setOrders(response.data); } catch (error) { console.error("Lỗi tải đơn hàng:", error); } finally { setLoading(false); } };
-    const viewOrderDetails = async (order) => { try { const response = await api.get(`/donhang/chitiet/${order.MaDH}`); setOrderDetails(response.data); setSelectedOrder(order); } catch (error) { alert("Không thể tải chi tiết đơn hàng"); } };
-    const updateOrdersStatus = async (orderID, newStatus) => { if (selectedOrder.TrangThai === "Đã thanh toán" || selectedOrder.TrangThai === "Đã giao") { if (newStatus !== "Đã hủy") { alert("Đơn hàng đã hoàn tất. Không thể đổi trạng thái khác!"); return; } else { if (!window.confirm("CẢNH BÁO: Đơn hàng ĐÃ THANH TOÁN. Hủy đơn đồng nghĩa với việc phải HOÀN TIỀN cho khách. Bạn có chắc chắn?")) return; } } if (selectedOrder.TrangThai === "Đã hủy") { alert("Đơn hàng đã hủy không thể khôi phục!"); return; } try { await api.put(`/donhang/${orderID}`, { TrangThai: newStatus }); if (newStatus === "Đã hủy" && selectedOrder.TrangThai === "Đã thanh toán") alert("Đã hủy đơn thành công! Vui lòng thực hiện hoàn tiền."); else alert("Cập nhật trạng thái thành công!"); fetchOrders(); if (selectedOrder && selectedOrder.MaDH === orderID) setSelectedOrder({ ...selectedOrder, TrangThai: newStatus }); } catch (error) { alert(error.response?.data?.message || "Không thể cập nhật trạng thái"); } };
-    const getStatusBadge = (status) => { const styles = { "Treo": "bg-warning-light text-warning", "Đang xử lý": "bg-info-light text-info", "Đang giao": "bg-purple-100 text-purple-700", "Đã giao": "bg-success-light text-success", "Đã hủy": "bg-danger-light text-danger" }; return <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${styles[status] || "bg-coffee-100 text-coffee-600"}`}>{status}</span>; };
-    const formatDate = (dateString) => new Date(dateString).toLocaleString("vi-VN");
-    const formatMoney = (amount) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [filterOrders, setFilterOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetails, setOrderDetails] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [search, setSearch] = useState("");
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
-    if (loading) return <DashboardLayout title="Quản lý đơn hàng"><div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-4 border-coffee-200 border-t-gold rounded-full animate-spin"></div></div></DashboardLayout>;
+  const statusOptions = [
+    { value: "all", label: "Tất cả đơn" },
+    { value: "Treo", label: "Chờ xử lý (Treo)" },
+    { value: "Đang xử lý", label: "Đang pha chế" },
+    { value: "Đang giao", label: "Đang giao hàng" },
+    { value: "Đã giao", label: "Đã hoàn thành" },
+    { value: "Đã hủy", label: "Đã hủy" }
+  ];
 
-    return (
-        <DashboardLayout title="Quản lý đơn hàng">
-            <div className="bg-white rounded-2xl border border-coffee-100/50 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-coffee-50"><div className="flex flex-wrap items-center gap-3">
-                    <input type="text" placeholder="Tìm theo mã, tên, SĐT.." value={search} onChange={(e) => setSearch(e.target.value)} className="flex-1 min-w-[200px] px-4 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-800 placeholder-coffee-300 focus:outline-none focus:ring-2 focus:ring-gold/30 text-sm" />
-                    <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="px-3 py-2.5 rounded-xl bg-coffee-50 border border-coffee-100 text-coffee-700 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold/30">{statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select>
-                    <span className="text-sm text-coffee-400">Tổng: <strong className="text-coffee-700">{filterOrders.length}</strong> đơn</span>
-                    <button onClick={() => navigate('/staff/create-order')} className="px-4 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white text-sm font-medium rounded-xl hover:from-coffee-600 hover:to-coffee-500 transition-all shadow-md shadow-coffee-700/20">+ Tạo đơn</button>
-                </div></div>
-                {filterOrders.length === 0 ? <div className="p-12 text-center"><p className="text-coffee-300">Không tìm thấy đơn hàng nào</p></div> : (
-                    <div className="overflow-x-auto"><table className="w-full"><thead><tr className="bg-coffee-50/50">
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Mã ĐH</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Khách hàng</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">SĐT</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Địa chỉ</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Tổng tiền</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Trạng thái</th><th className="text-left px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Ngày đặt</th><th className="text-center px-4 py-3 text-xs font-semibold text-coffee-500 uppercase">Thao tác</th>
-                    </tr></thead><tbody className="divide-y divide-coffee-50">{filterOrders.map(order => (
-                        <tr key={order.MaDH} className="hover:bg-coffee-50/30 transition-colors"><td className="px-4 py-3 text-sm font-semibold text-gold">#{order.MaDH}</td><td className="px-4 py-3 text-sm font-medium text-coffee-800">{order.TenNguoiNhan}</td><td className="px-4 py-3 text-sm text-coffee-500">{order.SDTNguoiNhan}</td><td className="px-4 py-3 text-sm text-coffee-400 max-w-[120px] truncate">{order.DiaChiGiaoHang}</td><td className="px-4 py-3 text-sm font-semibold text-coffee-800">{formatMoney(order.TongTien)}</td><td className="px-4 py-3">{getStatusBadge(order.TrangThai)}</td><td className="px-4 py-3 text-sm text-coffee-500">{formatDate(order.NgayDat)}</td><td className="px-4 py-3 text-center"><button className="px-3 py-1.5 text-xs font-medium text-info bg-info-light rounded-lg hover:bg-info/10 transition-colors" onClick={() => viewOrderDetails(order)}>Xem</button></td></tr>
-                    ))}</tbody></table></div>
-                )}
+  useEffect(() => { 
+    fetchOrders(); 
+  }, []);
+
+  useEffect(() => { 
+    let list = orders;
+    if (filterStatus !== "all") {
+      list = list.filter(o => o.TrangThai === filterStatus);
+    }
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      list = list.filter(o => 
+        o.MaDH.toString().includes(term) || 
+        (o.TenNguoiNhan && o.TenNguoiNhan.toLowerCase().includes(term)) || 
+        (o.SDTNguoiNhan && o.SDTNguoiNhan.includes(term))
+      );
+    }
+    setFilterOrders(list);
+  }, [orders, filterStatus, search]);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await api.get("/donhang");
+      setOrders(response.data || []);
+    } catch (error) {
+      console.error("Lỗi tải đơn hàng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewOrderDetails = async (order) => {
+    try {
+      const response = await api.get(`/donhang/chitiet/${order.MaDH}`);
+      setOrderDetails(response.data || []);
+      setSelectedOrder(order);
+    } catch (error) {
+      alert("Không thể tải chi tiết đơn hàng");
+    }
+  };
+
+  const updateOrdersStatus = async (orderID, newStatus) => {
+    if (selectedOrder.TrangThai === "Đã thanh toán" || selectedOrder.TrangThai === "Đã giao") {
+      if (newStatus !== "Đã hủy") {
+        alert("Đơn hàng đã hoàn tất. Không thể đổi sang trạng thái khác!");
+        return;
+      } else {
+        if (!window.confirm("⚠️ CẢNH BÁO: Đơn hàng ĐÃ THANH TOÁN. Hủy đơn đồng nghĩa với việc phải HOÀN TIỀN cho khách. Bạn có chắc chắn?")) return;
+      }
+    }
+    if (selectedOrder.TrangThai === "Đã hủy") {
+      alert("Đơn hàng đã hủy không thể khôi phục!");
+      return;
+    }
+
+    try {
+      await api.put(`/donhang/${orderID}`, { TrangThai: newStatus });
+      fetchOrders();
+      if (selectedOrder && selectedOrder.MaDH === orderID) {
+        setSelectedOrder({ ...selectedOrder, TrangThai: newStatus });
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Không thể cập nhật trạng thái");
+    }
+  };
+
+  const formatDate = (dateString) => new Date(dateString).toLocaleString("vi-VN");
+  const formatMoney = (amount) => Number(amount || 0).toLocaleString("vi-VN") + " đ";
+
+  return (
+    <DashboardLayout title="Xử Lý Đơn Hàng">
+      <div className="bg-white rounded-3xl border border-[#EFEBE9] shadow-sm overflow-hidden space-y-4 animate-fade-in">
+        
+        {/* Controls Toolbar */}
+        <div className="p-6 border-b border-[#FAF7F2] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h3 className="font-serif text-xl font-bold text-[#2C1810]">
+              Danh Sách Đơn Phục Vụ ({filterOrders.length})
+            </h3>
+            <p className="text-xs text-[#8D6E63] mt-0.5">
+              Cập nhật quy trình từ lúc tiếp nhận đến khi trao tay khách
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1887F]" />
+              <input 
+                type="text" 
+                placeholder="Tìm mã ĐH, tên khách, SĐT..." 
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-medium text-[#2C1810] focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
+              />
             </div>
 
-            {/* Modal */}
-            {selectedOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-coffee-900/50 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedOrder(null)}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-scale-in" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-6 border-b border-coffee-50"><h3 className="font-heading text-xl font-bold text-coffee-800">Chi tiết đơn hàng #{selectedOrder.MaDH}</h3><button onClick={() => setSelectedOrder(null)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-coffee-50 text-coffee-400 hover:text-coffee-700 transition-colors">✕</button></div>
-                        <div className="p-6 space-y-5">
-                            <div className="grid grid-cols-2 gap-3">{[["Người nhận", selectedOrder.TenNguoiNhan],["SĐT", selectedOrder.SDTNguoiNhan],["Địa chỉ", selectedOrder.DiaChiGiaoHang],["Thanh toán", selectedOrder.PhuongThucThanhToan]].map(([l,v],i) => <div key={i} className="bg-coffee-50/50 rounded-xl p-3"><p className="text-xs text-coffee-400 mb-1">{l}</p><p className="text-sm font-medium text-coffee-800">{v || "—"}</p></div>)}<div className="bg-coffee-50/50 rounded-xl p-3"><p className="text-xs text-coffee-400 mb-1">Trạng thái</p>{getStatusBadge(selectedOrder.TrangThai)}</div></div>
-                            <div><h4 className="text-sm font-semibold text-coffee-700 mb-3">Danh sách món</h4>
-                                <div className="overflow-x-auto"><table className="w-full"><thead><tr className="bg-coffee-50/50"><th className="text-left px-3 py-2 text-xs font-semibold text-coffee-500">Món</th><th className="text-left px-3 py-2 text-xs font-semibold text-coffee-500">Size</th><th className="text-left px-3 py-2 text-xs font-semibold text-coffee-500">SL</th><th className="text-left px-3 py-2 text-xs font-semibold text-coffee-500">Đơn giá</th><th className="text-right px-3 py-2 text-xs font-semibold text-coffee-500">Thành tiền</th></tr></thead>
-                                    <tbody className="divide-y divide-coffee-50">{orderDetails.map((item, index) => (<tr key={index} className="hover:bg-coffee-50/30"><td className="px-3 py-2 text-sm text-coffee-800 flex items-center gap-2"><img src={item.HinhAnh} alt="" className="w-8 h-8 rounded-lg object-cover" />{item.TenMon}</td><td className="px-3 py-2 text-sm text-coffee-500">{item.KichCo}</td><td className="px-3 py-2 text-sm text-coffee-500">{item.SoLuong}</td><td className="px-3 py-2 text-sm text-coffee-500">{formatMoney(item.DonGia)}</td><td className="px-3 py-2 text-sm font-semibold text-gold text-right">{formatMoney(item.DonGia * item.SoLuong)}</td></tr>))}</tbody>
-                                    <tfoot><tr className="bg-coffee-700 text-white"><td colSpan="4" className="px-3 py-3 font-medium text-sm">Tổng cộng:</td><td className="px-3 py-3 text-right font-bold">{formatMoney(selectedOrder.TongTien)}</td></tr></tfoot>
-                                </table></div>
-                            </div>
-                            <div><h4 className="text-sm font-semibold text-coffee-700 mb-3">Cập nhật trạng thái</h4><div className="flex flex-wrap gap-2">{statusOptions.filter(s => s.value !== "all" && s.value !== selectedOrder.TrangThai).map(status => { const isInvalid = (selectedOrder.TrangThai === "Đã thanh toán" || selectedOrder.TrangThai === "Đã giao") && status.value !== "Đã hủy"; return (<button key={status.value} className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${isInvalid ? 'bg-coffee-50 text-coffee-300 cursor-not-allowed' : 'bg-coffee-100 text-coffee-700 hover:bg-coffee-200'}`} onClick={() => updateOrdersStatus(selectedOrder.MaDH, status.value)}>{status.label}</button>); })}</div></div>
-                        </div>
-                        <div className="flex gap-3 p-6 pt-0"><button onClick={() => setShowInvoiceModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-coffee-700 to-coffee-600 text-white font-medium rounded-xl text-sm hover:from-coffee-600 hover:to-coffee-500 transition-all"><Printer size={16} /> In Hóa Đơn</button></div>
-                    </div>
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)} 
+              className="px-4 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFEBE9] text-xs font-semibold text-[#4E342E] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#C5963A]/30"
+            >
+              {statusOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+
+            <button 
+              onClick={() => navigate('/staff/create-order')} 
+              className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-[#2C1810] to-[#4E342E] hover:from-[#1A0F0A] hover:to-[#2C1810] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tạo đơn tại quầy</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Orders Table */}
+        {loading ? (
+          <div className="p-16 text-center">
+            <div className="w-10 h-10 border-4 border-[#EFEBE9] border-t-[#C5963A] rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-xs font-semibold text-[#8D6E63]">Đang tải danh sách đơn hàng...</p>
+          </div>
+        ) : filterOrders.length === 0 ? (
+          <div className="p-16 text-center">
+            <ShoppingBag className="w-12 h-12 text-[#A1887F] mx-auto mb-3 opacity-40" />
+            <p className="font-serif font-bold text-base text-[#2C1810]">Không có đơn hàng nào</p>
+            <p className="text-xs text-[#8D6E63] mt-1">Các đơn hàng mới sẽ xuất hiện tại đây.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9]">
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Mã ĐH</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Khách Hàng</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">SĐT</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Địa Chỉ</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Tổng Tiền</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Trạng Thái</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider">Thời Gian</th>
+                  <th className="px-5 py-3.5 text-[11px] font-bold text-[#6D4C41] uppercase tracking-wider text-center">Chi Tiết</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#FAF7F2] text-sm">
+                {filterOrders.map(order => (
+                  <tr key={order.MaDH} className="hover:bg-[#FAF7F2]/60 transition-colors">
+                    <td className="px-5 py-4 font-mono font-bold text-xs text-[#C5963A]">
+                      #{order.MaDH}
+                    </td>
+                    <td className="px-5 py-4 font-serif font-bold text-[#2C1810]">
+                      {order.TenNguoiNhan || "Khách tại quầy"}
+                    </td>
+                    <td className="px-5 py-4 text-xs font-mono text-[#6D4C41]">
+                      {order.SDTNguoiNhan || "—"}
+                    </td>
+                    <td className="px-5 py-4 text-xs text-[#8D6E63] max-w-[140px] truncate" title={order.DiaChiGiaoHang}>
+                      {order.DiaChiGiaoHang || "Tại quán"}
+                    </td>
+                    <td className="px-5 py-4 font-serif font-black text-[#2C1810]">
+                      {formatMoney(order.TongTien)}
+                    </td>
+                    <td className="px-5 py-4">
+                      <StatusBadge status={order.TrangThai} />
+                    </td>
+                    <td className="px-5 py-4 text-xs text-[#6D4C41] font-mono">
+                      {formatDate(order.NgayDat)}
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      <button 
+                        onClick={() => viewOrderDetails(order)}
+                        className="px-3.5 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
+                      >
+                        Xem & Xử Lý
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal Chi Tiết & Chuyển Trạng Thái */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedOrder(null)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-scale-in flex flex-col" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-6 border-b border-[#FAF7F2] flex items-center justify-between">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-[#2C1810]">
+                  Xử Lý Đơn Hàng #{selectedOrder.MaDH}
+                </h3>
+                <p className="text-xs text-[#8D6E63] font-mono mt-0.5">
+                  Đặt lúc: {formatDate(selectedOrder.NgayDat)}
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedOrder(null)} 
+                className="w-9 h-9 rounded-xl bg-[#FAF7F2] hover:bg-[#EFEBE9] text-[#6D4C41] flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              
+              {/* Customer Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
+                  <p className="text-[10px] uppercase font-bold text-[#A1887F]">Khách nhận</p>
+                  <p className="text-xs font-bold text-[#2C1810] mt-0.5 truncate">{selectedOrder.TenNguoiNhan || "Tại quầy"}</p>
                 </div>
-            )}
-            {showInvoiceModal && selectedOrder && <InvoicePrint order={selectedOrder} items={orderDetails} onClose={() => setShowInvoiceModal(false)} />}
-        </DashboardLayout>
-    );
+                <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
+                  <p className="text-[10px] uppercase font-bold text-[#A1887F]">SĐT</p>
+                  <p className="text-xs font-bold text-[#2C1810] mt-0.5 font-mono">{selectedOrder.SDTNguoiNhan || "—"}</p>
+                </div>
+                <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
+                  <p className="text-[10px] uppercase font-bold text-[#A1887F]">Thanh toán</p>
+                  <p className="text-xs font-bold text-[#2C1810] mt-0.5">{selectedOrder.PhuongThucThanhToan || "Chưa chọn"}</p>
+                </div>
+                <div className="p-3 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9]">
+                  <p className="text-[10px] uppercase font-bold text-[#A1887F]">Trạng thái</p>
+                  <div className="mt-0.5"><StatusBadge status={selectedOrder.TrangThai} /></div>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div>
+                <h4 className="font-serif font-bold text-sm text-[#2C1810] mb-3">
+                  Danh Sách Món Cần Pha Chế:
+                </h4>
+                <div className="overflow-x-auto border border-[#EFEBE9] rounded-2xl">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#FAF7F2] border-b border-[#EFEBE9] text-[10px] uppercase font-bold text-[#6D4C41]">
+                        <th className="px-4 py-2.5">Tên Món</th>
+                        <th className="px-4 py-2.5 text-center">Kích Cỡ</th>
+                        <th className="px-4 py-2.5 text-center">Số Lượng</th>
+                        <th className="px-4 py-2.5 text-right">Đơn Giá</th>
+                        <th className="px-4 py-2.5 text-right">Thành Tiền</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#FAF7F2] text-xs">
+                      {orderDetails.map((item, index) => (
+                        <tr key={index}>
+                          <td className="px-4 py-3 font-serif font-bold text-[#2C1810]">
+                            {item.TenMon}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="px-2 py-0.5 bg-[#FAF7F2] rounded font-bold text-[#6D4C41]">
+                              {item.KichCo}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center font-bold text-[#4E342E]">
+                            {item.SoLuong}
+                          </td>
+                          <td className="px-4 py-3 text-right font-mono text-[#6D4C41]">
+                            {formatMoney(item.DonGia)}
+                          </td>
+                          <td className="px-4 py-3 text-right font-mono font-bold text-[#C5963A]">
+                            {formatMoney(item.DonGia * item.SoLuong)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-[#2C1810] text-white">
+                        <td colSpan="4" className="px-4 py-3 font-serif font-bold text-xs">Tổng tiền đơn:</td>
+                        <td className="px-4 py-3 text-right font-serif font-black text-sm text-[#C5963A]">
+                          {formatMoney(selectedOrder.TongTien)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              {/* Status Update Buttons */}
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl border border-[#EFEBE9] space-y-2.5">
+                <h4 className="font-serif font-bold text-xs text-[#2C1810] uppercase tracking-wider">
+                  Chuyển Trạng Thái Xử Lý:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {statusOptions.filter(s => s.value !== "all" && s.value !== selectedOrder.TrangThai).map(status => (
+                    <button 
+                      key={status.value} 
+                      onClick={() => updateOrdersStatus(selectedOrder.MaDH, status.value)}
+                      className="px-4 py-2 text-xs font-bold rounded-xl bg-white border border-[#EFEBE9] hover:border-[#C5963A] hover:bg-[#C5963A]/10 text-[#4E342E] transition-all cursor-pointer shadow-sm"
+                    >
+                      {status.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-[#FAF7F2] flex gap-3">
+              <button 
+                onClick={() => setShowInvoiceModal(true)} 
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#C5963A] to-[#D4A84B] hover:from-[#B8872D] hover:to-[#C5963A] text-[#1A0F0A] font-bold rounded-2xl text-xs shadow-md transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>In Hóa Đơn Phục Vụ</span>
+              </button>
+              <button 
+                onClick={() => setSelectedOrder(null)} 
+                className="px-6 py-3 bg-[#FAF7F2] text-[#6D4C41] font-bold rounded-2xl text-xs hover:bg-[#EFEBE9] transition-colors cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Modal */}
+      {showInvoiceModal && selectedOrder && (
+        <InvoicePrint 
+          order={selectedOrder} 
+          items={orderDetails} 
+          onClose={() => setShowInvoiceModal(false)} 
+        />
+      )}
+    </DashboardLayout>
+  );
 }

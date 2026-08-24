@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// Lấy API URL từ env (bỏ qua ở môi trường phát triển cục bộ để dùng proxy)
-const apiUrl = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_URL || "");
-const baseURL = apiUrl ? `${apiUrl}/api` : '/api';
+// Khi chạy cục bộ localhost: gọi trực tiếp http://localhost:4000/api
+// Khi deploy production: dùng biến môi trường VITE_API_URL
+const baseURL = import.meta.env.DEV 
+  ? "http://localhost:4000/api" 
+  : ((import.meta.env.VITE_API_URL || "") + "/api");
 
 const api = axios.create({
   baseURL: baseURL,
@@ -10,6 +12,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
 api.interceptors.request.use(
   (config) => {
       // 1. Lấy token từ localStorage
@@ -25,21 +28,21 @@ api.interceptors.request.use(
       return Promise.reject(error);
   }
 );
+
 api.interceptors.response.use(
   (response) => {
-      // Nếu API trả về thành công, cứ trả về data bình thường
       return response;
   },
   (error) => {
-      // Nếu API trả về lỗi 401 (Unauthorized) hoặc 403 (Forbidden)
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          // Xóa token cũ đi
           localStorage.removeItem('token');
-          
-          // Đá người dùng về trang đăng nhập
-          window.location.href = '/login';
+          // Không tự động redirect nếu đang ở trang chủ public
+          if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
       }
       return Promise.reject(error);
   }
 );
+
 export default api;
