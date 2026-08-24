@@ -1,43 +1,148 @@
 @import "tailwindcss";
 
-@layer base {
-  *,
-  *::before,
-  *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+@theme {
+  /* Coffee Palette */
+  --color-coffee-900: #1a0f0a;
+  --color-coffee-800: #2c1810;
+  --color-coffee-700: #3e2723;
+  --color-coffee-600: #4e342e;
+  --color-coffee-500: #6d4c41;
+  --color-coffee-400: #8d6e63;
+  --color-coffee-300: #a1887f;
+  --color-coffee-200: #d7ccc8;
+  --color-coffee-100: #efebe9;
+  --color-coffee-50: #faf7f5;
 
-  html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
+  --color-cream: #fdf8f0;
+  --color-cream-dark: #f5e6d3;
+  --color-gold: #c5963a;
+  --color-gold-light: #d4a84b;
+  --color-gold-dark: #a67c2e;
+  --color-espresso: #1c1209;
+  --color-latte: #f5e6d3;
+  --color-mocha: #795548;
 
-  body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #2c1810;
-    background-color: #faf7f5;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-danger: #ef4444;
+  --color-danger-light: #fee2e2;
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
 
-  h1, h2, h3, h4, .font-serif {
-    font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
-    font-feature-settings: "kern", "liga", "clig", "calt";
-  }
+  /* Typography */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-ui: 'Poppins', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+  --animate-slide-down: slide-down 0.3s ease-out;
+  --animate-slide-right: slide-right 0.3s ease-out;
+  --animate-slide-left: slide-left 0.3s ease-out;
+  --animate-scale-in: scale-in 0.25s ease-out;
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-page-enter: page-enter 0.35s ease-out;
 }
 
-/* Custom Utilities */
+/* Keyframes */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-right {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+/* Global Base */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #2c1810;
+  background-color: #faf7f5;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: 'Playfair Display', Georgia, Cambria, serif;
+}
+
 .font-heading {
   font-family: 'Playfair Display', Georgia, serif;
 }
 
 .font-sans {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, #efebe9 25%, #faf7f5 37%, #efebe9 63%);
+  background-size: 400px 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: 0.75rem;
 }
 
 /* Scrollbar */

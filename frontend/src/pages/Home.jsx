@@ -357,7 +357,7 @@ function HomeContent() {
           <div className="p-10 text-center bg-white rounded-3xl border border-red-100 max-w-lg mx-auto shadow-sm my-8">
             <div className="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">!</div>
             <h3 className="font-serif font-bold text-lg text-[#2C1810] mb-1.5">{error}</h3>
-            <p className="text-xs text-[#8D6E63] mb-5">Đang kết nối đến http://localhost:4000/api</p>
+            <p className="text-xs text-[#8D6E63] mb-5">Đang kết nối đến {API_URL}/api</p>
             <button 
               onClick={loadData}
               className="px-5 py-2 bg-[#2C1810] text-white text-xs font-semibold rounded-xl hover:bg-[#4E342E] transition-all cursor-pointer"
